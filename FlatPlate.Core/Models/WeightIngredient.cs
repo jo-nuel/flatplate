@@ -1,4 +1,5 @@
 using FlatPlate.Core.Enums;
+using FlatPlate.Core.Services;
 
 namespace FlatPlate.Core.Models;
 
@@ -12,6 +13,6 @@ public sealed class WeightIngredient : Ingredient
     /// <inheritdoc />
     public override decimal ToBaseAmount(decimal amount, MeasureUnit unit)
     {
-        throw new NotImplementedException("Unit conversion is added in milestone M3.");
+        return UnitConverter.ToGrams(amount, unit, DensityGramsPerMl);
     }
 }
