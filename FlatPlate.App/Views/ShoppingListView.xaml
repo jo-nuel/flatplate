@@ -1,10 +1,92 @@
 <UserControl x:Class="FlatPlate.App.Views.ShoppingListView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Background="#F8F5ED">
-        <TextBlock HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="22"
-                   Text="Shopping List: teammate placeholder" />
-    </Grid>
+	<Grid Margin="20">
+
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<!-- title -->
+		<TextBlock Grid.Row="0"
+                   Text="Shopping List"
+                   FontSize="28"
+                   FontWeight="Bold"
+                   Margin="0,0,0,8"/>
+
+		<!-- operation -->
+		<StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,16">
+
+			<Button x:Name="CompareStoresButton"
+                    Content="Compare stores"
+                    Padding="14,7"
+                    Margin="0,0,10,0"/>
+
+			<TextBlock Text="Tick purchased items and enter the amount paid."
+                       VerticalAlignment="Center"/>
+		</StackPanel>
+
+		<!-- shopping list -->
+		<DataGrid x:Name="ShoppingListGrid"
+                  Grid.Row="2"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  HeadersVisibility="Column"
+                  RowHeaderWidth="0">
+
+			<DataGrid.Columns>
+
+				<DataGridTextColumn Header="Ingredient"
+                                    Binding="{Binding IngredientName}"
+                                    IsReadOnly="True"
+                                    Width="*"/>
+
+				<DataGridTextColumn Header="Amount"
+                                    Binding="{Binding RequiredAmount}"
+                                    IsReadOnly="True"
+                                    Width="90"/>
+
+				<DataGridTextColumn Header="Unit"
+                                    Binding="{Binding Unit}"
+                                    IsReadOnly="True"
+                                    Width="70"/>
+
+				<DataGridTextColumn Header="Aisle"
+                                    Binding="{Binding Aisle}"
+                                    IsReadOnly="True"
+                                    Width="120"/>
+
+				<DataGridCheckBoxColumn Header="Purchased"
+                                        Binding="{Binding IsPurchased}"
+                                        Width="90"/>
+
+				<DataGridTextColumn Header="Amount paid ($)"
+                                    Binding="{Binding ActualPrice}"
+                                    Width="130"/>
+
+			</DataGrid.Columns>
+		</DataGrid>
+
+		<!-- Statistics section at the bottom -->
+		<StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0">
+
+			<TextBlock Text="Actual spending: "
+                       FontSize="18"/>
+
+			<TextBlock x:Name="ActualSpendingText"
+                       Text="—"
+                       FontSize="18"
+                       FontWeight="Bold"/>
+		</StackPanel>
+
+	</Grid>
 </UserControl>
