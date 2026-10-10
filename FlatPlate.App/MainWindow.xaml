@@ -19,7 +19,7 @@
             <views:PriceBookView />
         </TabItem>
         <TabItem Header="Weekly Planner">
-            <views:WeeklyPlannerView />
+            <views:WeeklyPlannerView x:Name="WeeklyPlanner" />
         </TabItem>
         <TabItem Header="Shopping List">
             <views:ShoppingListView />
