@@ -1,3 +1,4 @@
+using FlatPlate.App.Data;
 using FlatPlate.App.Services;
 using FlatPlate.App.ViewModels;
 using FlatPlate.Core.Data;
@@ -35,6 +36,7 @@ public partial class MainWindow : Window
 
         _context = new FlatPlateDbContext(databaseOptions);
         _context.Database.EnsureCreated();
+        RecipeSeedData.AddMissingRecipes(_context);
 
         var planRepository = new Repository<PlannedMeal>(_context);
         var planService = new WeeklyPlanService(planRepository);
