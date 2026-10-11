@@ -40,6 +40,25 @@
                                   SelectedItem="{Binding SelectedStore,
                                                          Mode=TwoWay}" />
                     </StackPanel>
+                    <StackPanel Margin="0,12,0,0"
+                                Orientation="Horizontal">
+                        <TextBlock Margin="0,0,10,0"
+                                   VerticalAlignment="Center"
+                                   Text="Weekly budget" />
+                        <Slider Width="260"
+                                Minimum="25"
+                                Maximum="500"
+                                TickFrequency="25"
+                                IsSnapToTickEnabled="True"
+                                Value="{Binding WeeklyBudget,
+                                                Mode=TwoWay}" />
+                        <TextBlock Width="70"
+                                   Margin="10,0,0,0"
+                                   VerticalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding WeeklyBudget,
+                                                  StringFormat={}{0:C0}}" />
+                    </StackPanel>
                 </StackPanel>
 
                 <Button Grid.Column="1"

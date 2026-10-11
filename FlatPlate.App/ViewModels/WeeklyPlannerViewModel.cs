@@ -10,6 +10,7 @@ namespace FlatPlate.App.ViewModels;
 public sealed class WeeklyPlannerViewModel : ViewModelBase
 {
     private const int DaysInWeek = 7;
+    private const decimal DefaultWeeklyBudget = 150m;
 
     private readonly WeeklyPlanService _planService;
     private readonly IDialogService _dialogService;
@@ -17,6 +18,7 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
     private DateTime _weekStartDate;
     private IReadOnlyList<PlannerDayViewModel> _days = Array.Empty<PlannerDayViewModel>();
     private Store? _selectedStore;
+    private decimal _weeklyBudget = DefaultWeeklyBudget;
     private string _statusMessage = string.Empty;
 
     /// <summary>
@@ -63,6 +65,12 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
     {
         get => _selectedStore;
         set => SetProperty(ref _selectedStore, value);
+    }
+
+    public decimal WeeklyBudget
+    {
+        get => _weeklyBudget;
+        set => SetProperty(ref _weeklyBudget, value);
     }
 
     public DateTime WeekStartDate
