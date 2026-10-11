@@ -43,6 +43,8 @@ public partial class MainWindow : Window
         var planRepository = new Repository<PlannedMeal>(_context);
         var planService = new WeeklyPlanService(planRepository);
         var recipes = _context.Recipes
+            .Include(recipe => recipe.Ingredients)
+            .ThenInclude(item => item.Ingredient)
             .OrderBy(recipe => recipe.Name)
             .ToList();
         var stores = _context.Stores
