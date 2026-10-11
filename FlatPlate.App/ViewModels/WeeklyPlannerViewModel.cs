@@ -106,8 +106,17 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
     public BudgetResult BudgetResult
     {
         get => _budgetResult;
-        private set => SetProperty(ref _budgetResult, value);
+        private set
+        {
+            if (SetProperty(ref _budgetResult, value))
+            {
+                OnPropertyChanged(nameof(HasMissingPrices));
+            }
+        }
     }
+
+    public bool HasMissingPrices =>
+        BudgetResult.MissingPriceItems.Count > 0;
 
     public DateTime WeekStartDate
     {
