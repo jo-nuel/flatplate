@@ -1,4 +1,5 @@
 using FlatPlate.App.Services;
+using FlatPlate.Core.Interfaces;
 using FlatPlate.Core.Models;
 using FlatPlate.Core.Services;
 
@@ -13,12 +14,15 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
     private const decimal DefaultWeeklyBudget = 150m;
 
     private readonly WeeklyPlanService _planService;
+    private readonly IIngredientMerger _ingredientMerger;
+    private readonly IBudgetCalculator _budgetCalculator;
     private readonly IDialogService _dialogService;
 
     private DateTime _weekStartDate;
     private IReadOnlyList<PlannerDayViewModel> _days = Array.Empty<PlannerDayViewModel>();
     private Store? _selectedStore;
     private decimal _weeklyBudget = DefaultWeeklyBudget;
+    private BudgetResult _budgetResult = new();
     private string _statusMessage = string.Empty;
 
     /// <summary>
@@ -26,16 +30,22 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
     /// </summary>
     public WeeklyPlannerViewModel(
         WeeklyPlanService planService,
+        IIngredientMerger ingredientMerger,
+        IBudgetCalculator budgetCalculator,
         IDialogService dialogService,
         IReadOnlyList<Recipe> availableRecipes,
         IReadOnlyList<Store> availableStores)
     {
         ArgumentNullException.ThrowIfNull(planService);
+        ArgumentNullException.ThrowIfNull(ingredientMerger);
+        ArgumentNullException.ThrowIfNull(budgetCalculator);
         ArgumentNullException.ThrowIfNull(dialogService);
         ArgumentNullException.ThrowIfNull(availableRecipes);
         ArgumentNullException.ThrowIfNull(availableStores);
 
         _planService = planService;
+        _ingredientMerger = ingredientMerger;
+        _budgetCalculator = budgetCalculator;
         _dialogService = dialogService;
         AvailableRecipes = availableRecipes
             .OrderBy(recipe => recipe.Name)
@@ -64,13 +74,31 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
     public Store? SelectedStore
     {
         get => _selectedStore;
-        set => SetProperty(ref _selectedStore, value);
+        set
+        {
+            if (SetProperty(ref _selectedStore, value))
+            {
+                RefreshBudget();
+            }
+        }
     }
 
     public decimal WeeklyBudget
     {
         get => _weeklyBudget;
-        set => SetProperty(ref _weeklyBudget, value);
+        set
+        {
+            if (SetProperty(ref _weeklyBudget, value))
+            {
+                RefreshBudget();
+            }
+        }
+    }
+
+    public BudgetResult BudgetResult
+    {
+        get => _budgetResult;
+        private set => SetProperty(ref _budgetResult, value);
     }
 
     public DateTime WeekStartDate
@@ -119,6 +147,7 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
             var weekStart = DateOnly.FromDateTime(WeekStartDate);
             var savedMeals = _planService.GetWeek(weekStart);
             Days = CreateDays(weekStart, savedMeals);
+            RefreshBudget(savedMeals);
             StatusMessage = AvailableRecipes.Count == 0
                 ? "No recipes are available yet. Add recipes before planning meals."
                 : string.Empty;
@@ -213,6 +242,33 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
             mealSlot.Slot,
             mealSlot.SelectedRecipe,
             mealSlot.Servings);
+    }
+
+    private void RefreshBudget(IReadOnlyList<PlannedMeal>? plannedMeals = null)
+    {
+        try
+        {
+            if (SelectedStore is null)
+            {
+                BudgetResult = new BudgetResult { Budget = WeeklyBudget };
+                return;
+            }
+
+            plannedMeals ??= _planService.GetWeek(
+                DateOnly.FromDateTime(WeekStartDate));
+            var mergedItems = _ingredientMerger.Merge(plannedMeals);
+            BudgetResult = _budgetCalculator.Calculate(
+                mergedItems,
+                SelectedStore.Id,
+                WeeklyBudget);
+        }
+        catch (Exception exception)
+        {
+            StatusMessage = "The weekly budget could not be calculated.";
+            _dialogService.ShowError(
+                $"The weekly budget could not be calculated. {exception.Message}",
+                "Budget error");
+        }
     }
 
     private void ShowPlannerError(Exception exception)

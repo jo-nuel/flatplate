@@ -42,6 +42,9 @@ public partial class MainWindow : Window
 
         var planRepository = new Repository<PlannedMeal>(_context);
         var planService = new WeeklyPlanService(planRepository);
+        var ingredientMerger = new IngredientMerger();
+        var budgetCalculator = new BudgetCalculator(
+            new DatabasePriceProvider(_context));
         var recipes = _context.Recipes
             .Include(recipe => recipe.Ingredients)
             .ThenInclude(item => item.Ingredient)
@@ -53,6 +56,8 @@ public partial class MainWindow : Window
 
         WeeklyPlanner.DataContext = new WeeklyPlannerViewModel(
             planService,
+            ingredientMerger,
+            budgetCalculator,
             new DialogService(),
             recipes,
             stores);
