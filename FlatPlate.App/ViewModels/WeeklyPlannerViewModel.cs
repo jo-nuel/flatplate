@@ -16,6 +16,7 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
 
     private DateTime _weekStartDate;
     private IReadOnlyList<PlannerDayViewModel> _days = Array.Empty<PlannerDayViewModel>();
+    private Store? _selectedStore;
     private string _statusMessage = string.Empty;
 
     /// <summary>
@@ -24,17 +25,23 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
     public WeeklyPlannerViewModel(
         WeeklyPlanService planService,
         IDialogService dialogService,
-        IReadOnlyList<Recipe> availableRecipes)
+        IReadOnlyList<Recipe> availableRecipes,
+        IReadOnlyList<Store> availableStores)
     {
         ArgumentNullException.ThrowIfNull(planService);
         ArgumentNullException.ThrowIfNull(dialogService);
         ArgumentNullException.ThrowIfNull(availableRecipes);
+        ArgumentNullException.ThrowIfNull(availableStores);
 
         _planService = planService;
         _dialogService = dialogService;
         AvailableRecipes = availableRecipes
             .OrderBy(recipe => recipe.Name)
             .ToList();
+        AvailableStores = availableStores
+            .OrderBy(store => store.Name)
+            .ToList();
+        _selectedStore = AvailableStores.FirstOrDefault();
         _weekStartDate = GetMonday(DateTime.Today);
 
         ClearWeekCommand = new RelayCommand(
@@ -48,7 +55,15 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
 
     public IReadOnlyList<Recipe> AvailableRecipes { get; }
 
+    public IReadOnlyList<Store> AvailableStores { get; }
+
     public RelayCommand ClearWeekCommand { get; }
+
+    public Store? SelectedStore
+    {
+        get => _selectedStore;
+        set => SetProperty(ref _selectedStore, value);
+    }
 
     public DateTime WeekStartDate
     {

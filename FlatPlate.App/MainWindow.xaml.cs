@@ -45,11 +45,15 @@ public partial class MainWindow : Window
         var recipes = _context.Recipes
             .OrderBy(recipe => recipe.Name)
             .ToList();
+        var stores = _context.Stores
+            .OrderBy(store => store.Name)
+            .ToList();
 
         WeeklyPlanner.DataContext = new WeeklyPlannerViewModel(
             planService,
             new DialogService(),
-            recipes);
+            recipes,
+            stores);
     }
 
     /// <summary>

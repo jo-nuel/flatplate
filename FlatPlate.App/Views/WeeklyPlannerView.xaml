@@ -31,6 +31,14 @@
                                     SelectedDate="{Binding WeekStartDate,
                                                            Mode=TwoWay,
                                                            UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Margin="24,0,10,0"
+                                   VerticalAlignment="Center"
+                                   Text="Supermarket" />
+                        <ComboBox Width="150"
+                                  ItemsSource="{Binding AvailableStores}"
+                                  DisplayMemberPath="Name"
+                                  SelectedItem="{Binding SelectedStore,
+                                                         Mode=TwoWay}" />
                     </StackPanel>
                 </StackPanel>
 
