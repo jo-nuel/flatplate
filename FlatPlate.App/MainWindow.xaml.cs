@@ -38,6 +38,7 @@ public partial class MainWindow : Window
         _context.Database.EnsureCreated();
         IngredientSeedData.AddMissingIngredients(_context);
         RecipeSeedData.AddMissingRecipes(_context);
+        StoreSeedData.AddMissingStores(_context);
 
         var planRepository = new Repository<PlannedMeal>(_context);
         var planService = new WeeklyPlanService(planRepository);
