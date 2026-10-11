@@ -56,6 +56,10 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
         _selectedStore = AvailableStores.FirstOrDefault();
         _weekStartDate = GetMonday(DateTime.Today);
 
+        PreviousWeekCommand = new RelayCommand(
+            () => WeekStartDate = WeekStartDate.AddDays(-DaysInWeek));
+        NextWeekCommand = new RelayCommand(
+            () => WeekStartDate = WeekStartDate.AddDays(DaysInWeek));
         ClearWeekCommand = new RelayCommand(
             ClearWeek,
             () => Days.SelectMany(day => day.MealSlots)
@@ -68,6 +72,10 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
     public IReadOnlyList<Recipe> AvailableRecipes { get; }
 
     public IReadOnlyList<Store> AvailableStores { get; }
+
+    public RelayCommand PreviousWeekCommand { get; }
+
+    public RelayCommand NextWeekCommand { get; }
 
     public RelayCommand ClearWeekCommand { get; }
 
