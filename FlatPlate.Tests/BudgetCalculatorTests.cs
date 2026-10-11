@@ -164,6 +164,22 @@ public sealed class BudgetCalculatorTests
     }
 
     /// <summary>
+    /// Confirms that a valid supermarket must be selected for calculation.
+    /// </summary>
+    [TestCase(0)]
+    [TestCase(-1)]
+    public void Calculate_NonPositiveStoreId_ThrowsArgumentOutOfRangeException(
+        int storeId)
+    {
+        Assert.That(
+            () => _calculator.Calculate(
+                Array.Empty<MergedItem>(),
+                storeId,
+                20m),
+            Throws.TypeOf<ArgumentOutOfRangeException>());
+    }
+
+    /// <summary>
     /// Confirms that a weekly budget must be greater than zero.
     /// </summary>
     [TestCase(0)]
