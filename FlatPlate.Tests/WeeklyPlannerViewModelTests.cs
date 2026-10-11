@@ -71,6 +71,26 @@ public sealed class WeeklyPlannerViewModelTests
     }
 
     /// <summary>
+    /// Confirms that backward navigation reloads the previous seven-day period.
+    /// </summary>
+    [Test]
+    public void PreviousWeekCommand_MovesPlannerBackSevenDays()
+    {
+        var viewModel = CreateViewModel();
+        var originalWeek = viewModel.WeekStartDate;
+
+        viewModel.PreviousWeekCommand.Execute(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.WeekStartDate,
+                Is.EqualTo(originalWeek.AddDays(-7)));
+            Assert.That(viewModel.Days[0].Date,
+                Is.EqualTo(DateOnly.FromDateTime(originalWeek.AddDays(-7))));
+        });
+    }
+
+    /// <summary>
     /// Confirms that selecting a recipe saves the meal and costs its ingredients.
     /// </summary>
     [Test]
@@ -120,6 +140,51 @@ public sealed class WeeklyPlannerViewModelTests
     }
 
     /// <summary>
+    /// Confirms that changing servings refreshes the number of packs required.
+    /// </summary>
+    [Test]
+    public void Servings_Changed_RecalculatesBasketCost()
+    {
+        _priceProvider.AddPrice(
+            ingredientId: 1,
+            storeId: StoreId,
+            price: 6m,
+            packSize: 500m);
+        var viewModel = CreateViewModel();
+        var dinner = viewModel.Days[0].MealSlots
+            .Single(slot => slot.Slot == MealSlot.Dinner);
+        dinner.SelectedRecipe = _recipe;
+
+        var reloadedDinner = viewModel.Days[0].MealSlots
+            .Single(slot => slot.Slot == MealSlot.Dinner);
+        reloadedDinner.Servings = 4;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_repository.Items.Single().Servings, Is.EqualTo(4));
+            Assert.That(viewModel.BudgetResult.TotalCost, Is.EqualTo(12m));
+        });
+    }
+
+    /// <summary>
+    /// Confirms that choosing another supermarket uses its price book.
+    /// </summary>
+    [Test]
+    public void SelectedStore_Changed_RecalculatesWithNewStorePrices()
+    {
+        var coles = new Store { Id = 2, Name = "Coles" };
+        _priceProvider.AddPrice(1, StoreId, 6m, 500m);
+        _priceProvider.AddPrice(1, coles.Id, 10m, 500m);
+        var viewModel = CreateViewModel(new[] { _store, coles });
+        viewModel.Days[0].MealSlots[0].SelectedRecipe = _recipe;
+        Assert.That(viewModel.BudgetResult.TotalCost, Is.EqualTo(10m));
+
+        viewModel.SelectedStore = _store;
+
+        Assert.That(viewModel.BudgetResult.TotalCost, Is.EqualTo(6m));
+    }
+
+    /// <summary>
     /// Confirms that an unavailable ingredient price marks the estimate incomplete.
     /// </summary>
     [Test]
@@ -137,7 +202,47 @@ public sealed class WeeklyPlannerViewModelTests
         });
     }
 
-    private WeeklyPlannerViewModel CreateViewModel()
+    /// <summary>
+    /// Confirms that approving Clear Week removes all planned meals.
+    /// </summary>
+    [Test]
+    public void ClearWeekCommand_Confirmed_RemovesPlannedMeals()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.Days[0].MealSlots[0].SelectedRecipe = _recipe;
+
+        viewModel.ClearWeekCommand.Execute(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_dialogService.ConfirmCallCount, Is.EqualTo(1));
+            Assert.That(_repository.Items, Is.Empty);
+            Assert.That(viewModel.ClearWeekCommand.CanExecute(null), Is.False);
+        });
+    }
+
+    /// <summary>
+    /// Confirms that cancelling Clear Week preserves the current plan.
+    /// </summary>
+    [Test]
+    public void ClearWeekCommand_Cancelled_PreservesPlannedMeals()
+    {
+        _dialogService.ConfirmResult = false;
+        var viewModel = CreateViewModel();
+        viewModel.Days[0].MealSlots[0].SelectedRecipe = _recipe;
+
+        viewModel.ClearWeekCommand.Execute(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_dialogService.ConfirmCallCount, Is.EqualTo(1));
+            Assert.That(_repository.Items, Has.Count.EqualTo(1));
+            Assert.That(viewModel.ClearWeekCommand.CanExecute(null), Is.True);
+        });
+    }
+
+    private WeeklyPlannerViewModel CreateViewModel(
+        IReadOnlyList<Store>? stores = null)
     {
         return new WeeklyPlannerViewModel(
             new WeeklyPlanService(_repository),
@@ -145,7 +250,7 @@ public sealed class WeeklyPlannerViewModelTests
             new BudgetCalculator(_priceProvider),
             _dialogService,
             new[] { _recipe },
-            new[] { _store });
+            stores ?? new[] { _store });
     }
 
     private static Recipe CreateRecipe()
@@ -171,9 +276,14 @@ public sealed class WeeklyPlannerViewModelTests
 
     private sealed class TestDialogService : IDialogService
     {
+        public bool ConfirmResult { get; set; } = true;
+
+        public int ConfirmCallCount { get; private set; }
+
         public bool Confirm(string message, string title)
         {
-            return true;
+            ConfirmCallCount++;
+            return ConfirmResult;
         }
 
         public void ShowError(string message, string title)
