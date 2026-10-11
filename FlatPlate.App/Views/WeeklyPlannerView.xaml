@@ -59,6 +59,50 @@
                                    Text="{Binding WeeklyBudget,
                                                   StringFormat={}{0:C0}}" />
                     </StackPanel>
+                    <Grid Width="500"
+                          Margin="0,12,0,0"
+                          HorizontalAlignment="Left">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <DockPanel Margin="0,0,0,5">
+                            <TextBlock DockPanel.Dock="Right"
+                                       Foreground="#596675">
+                                <Run Text="Missing prices: " />
+                                <Run Text="{Binding BudgetResult.MissingPriceItems.Count,
+                                                    Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock FontWeight="SemiBold">
+                                <Run Text="Estimated spend: " />
+                                <Run Text="{Binding BudgetResult.TotalCost,
+                                                    Mode=OneWay,
+                                                    StringFormat={}{0:C2}}" />
+                            </TextBlock>
+                        </DockPanel>
+
+                        <ProgressBar Grid.Row="1"
+                                     Height="12"
+                                     Minimum="0"
+                                     Maximum="100"
+                                     Value="{Binding BudgetResult.PercentageUsed,
+                                                     Mode=OneWay}">
+                            <ProgressBar.Style>
+                                <Style TargetType="ProgressBar">
+                                    <Setter Property="Foreground"
+                                            Value="#3A8D5D" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding BudgetResult.IsOverBudget}"
+                                                     Value="True">
+                                            <Setter Property="Foreground"
+                                                    Value="#C94B40" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ProgressBar.Style>
+                        </ProgressBar>
+                    </Grid>
                 </StackPanel>
 
                 <Button Grid.Column="1"
