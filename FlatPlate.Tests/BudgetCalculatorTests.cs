@@ -41,6 +41,32 @@ public sealed class BudgetCalculatorTests
     }
 
     /// <summary>
+    /// Confirms that whole-pack costs are added across a complete basket.
+    /// </summary>
+    [Test]
+    public void Calculate_MultipleItems_AddsBasketCost()
+    {
+        var rice = CreateWeightIngredient(1, "Rice");
+        var chicken = CreateWeightIngredient(2, "Chicken breast");
+        _priceProvider.AddPrice(rice, WoolworthsStoreId, 3m, 500m);
+        _priceProvider.AddPrice(chicken, WoolworthsStoreId, 12m, 1000m);
+        var items = new[]
+        {
+            CreateMergedItem(rice, 750m),
+            CreateMergedItem(chicken, 1200m),
+        };
+
+        var result = _calculator.Calculate(items, WoolworthsStoreId, 50m);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.TotalCost, Is.EqualTo(30m));
+            Assert.That(result.PercentageUsed, Is.EqualTo(60m));
+            Assert.That(result.IsOverBudget, Is.False);
+        });
+    }
+
+    /// <summary>
     /// Confirms that spending the full budget is not treated as over budget.
     /// </summary>
     [Test]
