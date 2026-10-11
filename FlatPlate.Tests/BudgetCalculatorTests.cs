@@ -132,6 +132,23 @@ public sealed class BudgetCalculatorTests
     }
 
     /// <summary>
+    /// Confirms that corrupt pack-size data cannot be used for a basket total.
+    /// </summary>
+    [TestCase(0)]
+    [TestCase(-1)]
+    public void Calculate_NonPositivePackSize_ThrowsArgumentOutOfRangeException(
+        int packSize)
+    {
+        var rice = CreateWeightIngredient(1, "Rice");
+        _priceProvider.AddPrice(rice, WoolworthsStoreId, 4m, packSize);
+        var items = new[] { CreateMergedItem(rice, 500m) };
+
+        Assert.That(
+            () => _calculator.Calculate(items, WoolworthsStoreId, 20m),
+            Throws.TypeOf<ArgumentOutOfRangeException>());
+    }
+
+    /// <summary>
     /// Confirms that a weekly budget must be greater than zero.
     /// </summary>
     [TestCase(0)]
