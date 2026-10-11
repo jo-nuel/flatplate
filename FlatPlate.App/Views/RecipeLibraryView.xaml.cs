@@ -3,12 +3,12 @@ using System.Windows.Controls;
 namespace FlatPlate.App.Views;
 
 /// <summary>
-/// Holds the Recipe Library tab until the teammate implementation is added.
+/// Shows the household recipe collection with search, cuisine filter and recipe details.
 /// </summary>
 public partial class RecipeLibraryView : UserControl
 {
     /// <summary>
-    /// Creates the Recipe Library placeholder.
+    /// Creates the Recipe Library view.
     /// </summary>
     public RecipeLibraryView()
     {
