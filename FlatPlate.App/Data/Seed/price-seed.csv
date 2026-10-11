@@ -1,0 +1,71 @@
+ingredient,store,product_id,product_name,price,pack_size,collected_date,normalisation_note
+Chicken Breast,Coles,2263168,RSPCA Approved Chicken Breast Fillets Small Pack,8.70,600,2026-09-17,Approximate pack weight from listing
+Chicken Breast,Woolworths,6078623,Woolworths RSPCA Approved Chicken Breast Fillets 650g,9.40,650,2026-09-17,
+Beef Mince,Coles,8112449,Australian No Added Hormones Beef Mince Lean,10.00,500,2026-09-17,
+Beef Mince,Woolworths,577863,Woolworths Beef Mince 500g,8.00,500,2026-09-17,
+Tuna,Coles,2902438,Tuna Springwater,3.30,425,2026-09-17,
+Tuna,Woolworths,6048331,Woolworths Tuna Chunks In Springwater 425g,4.60,425,2026-09-17,
+Broccoli,Coles,5341010,Frozen Broccoli Florets,4.00,500,2026-09-17,
+Broccoli,Woolworths,120139,Bell Farms Frozen Broccoli Florets 500g,3.00,500,2026-09-17,
+Red Capsicum,Coles,4580208,Red Capsicum Loose,1.30,220,2026-09-17,Approximate pack weight from listing
+Red Capsicum,Woolworths,135306,Red Capsicum each,1.23,220,2026-09-17,Pack weight aligned to equivalent loose capsicum
+Carrots,Coles,9006560,Carrots 1kg,2.40,1000,2026-09-17,
+Carrots,Woolworths,135369,Woolworths Australian Grown Carrots 1kg,2.50,1000,2026-09-17,
+Brown Onion,Coles,4803991,Brown Onions 1kg,3.60,1000,2026-09-17,
+Brown Onion,Woolworths,144427,Woolworths Brown Onions Bag 2kg,5.50,2000,2026-09-17,
+Potatoes,Coles,2488485,Baby Washed Potatoes 1kg,4.50,1000,2026-09-17,
+Potatoes,Woolworths,385085,Woolworths White Washed Baby Potatoes Bag 1kg,4.80,1000,2026-09-17,
+Cauliflower,Coles,186587,Frozen Cauliflower 500g,4.00,500,2026-09-17,
+Cauliflower,Woolworths,135552,Fresh Whole Cauliflower each,3.50,800,2026-09-17,Estimated 800g per whole cauliflower
+Cheese,Coles,2071305,Cheddar Cheese Block 1kg,9.30,1000,2026-09-17,
+Cheese,Woolworths,891325,Woolworths Tasty Cheese Block 1kg,10.50,1000,2026-09-17,
+White Rice,Coles,5357574,White Long Grain Rice 1kg,1.80,1000,2026-09-17,
+White Rice,Woolworths,35007,Woolworths Essentials Long Grain Rice 1kg,1.80,1000,2026-09-17,
+Spaghetti,Coles,3329115,Pasta Spaghetti 500g,0.90,500,2026-09-17,
+Spaghetti,Woolworths,44571,Woolworths Essentials Pasta Spaghetti 500g,0.90,500,2026-09-17,
+Pasta,Coles,3329104,Penne 500g,0.90,500,2026-09-17,
+Pasta,Woolworths,188800,Woolworths Essentials Pasta Penne 500g,0.90,500,2026-09-17,
+Diced Tomatoes,Coles,5548754,Italian Diced Tomatoes 400g,1.10,400,2026-09-17,
+Diced Tomatoes,Woolworths,311488,Woolworths Essentials Diced Tomatoes 400g,0.95,400,2026-09-17,
+Tomato Paste,Coles,8745310,Italian Tomato Paste 140g,1.00,140,2026-09-17,
+Tomato Paste,Woolworths,90260,Woolworths Essentials Tomato Paste 170g,0.95,170,2026-09-17,
+Chickpeas,Coles,8075852,Chick Peas 420g,0.95,420,2026-09-17,
+Chickpeas,Woolworths,907050,Woolworths Chickpeas 420g,0.95,420,2026-09-17,
+Frozen Peas,Coles,399067,Peas Snap Frozen 1kg,2.50,1000,2026-09-17,
+Frozen Peas,Woolworths,96845,Woolworths Essentials Frozen Peas 1kg,2.50,1000,2026-09-17,
+Breadcrumbs,Coles,9305277,Breadcrumbs 500g,2.00,500,2026-09-17,
+Breadcrumbs,Woolworths,879124,Woolworths Essentials Breadcrumbs 750g,3.00,750,2026-09-17,
+Red Lentils,Coles,4683608,Red Lentils 1kg,4.00,1000,2026-09-17,
+Red Lentils,Woolworths,753947,Katoomba Ingredients Red Lentils 1kg,4.00,1000,2026-09-17,
+Curry Powder,Coles,475959,Mild Curry Powder 50g,2.65,50,2026-09-17,
+Curry Powder,Woolworths,716890,Hoyts Curry Powder Mild 50g,2.65,50,2026-09-17,
+Taco Seasoning,Coles,1325871,Mexican Style Tasty Taco Seasoning Mix 28g,3.00,28,2026-09-17,
+Taco Seasoning,Woolworths,6024088,La Mesita Taco Seasoning Mild 35g,1.25,35,2026-09-17,
+Mixed Herbs,Coles,8987375,Mixed Herbs 13g,2.15,13,2026-09-17,
+Mixed Herbs,Woolworths,251120,Woolworths Mixed Herbs Dried 12g,2.00,12,2026-09-17,
+Soy Sauce,Coles,2579434,Soy Sauce 500ml,1.90,500,2026-09-17,
+Soy Sauce,Woolworths,944470,Tiao Hu Soy Sauce 500ml,1.90,500,2026-09-17,
+Olive Oil,Coles,3401493,Olive Oil 1L,9.50,1000,2026-09-17,
+Olive Oil,Woolworths,698861,Woolworths Essentials Olive Oil 1L,9.50,1000,2026-09-17,
+Coconut Milk,Coles,3924527,Coconut Milk 400ml,1.70,400,2026-09-17,
+Coconut Milk,Woolworths,694751,Woolworths Essentials Coconut Milk 400ml,1.70,400,2026-09-17,
+Full Cream Milk,Coles,9052681,Dairy Full Cream Milk 1L,1.75,1000,2026-09-17,
+Full Cream Milk,Woolworths,50923,Woolworths Full Cream Milk 1L,1.75,1000,2026-09-17,
+Vegetable Stock,Coles,9209229,Real Stock Vegetable Stock Salt Reduced 1L,3.50,1000,2026-09-17,Special price in snapshot
+Vegetable Stock,Woolworths,6015087,Nuttelex Vegetable Stock 1L,1.95,1000,2026-09-17,Special price in snapshot
+Garlic Clove,Coles,6105715,Australian Garlic Loose,1.98,10,2026-09-17,Estimated 10 cloves per head
+Garlic Clove,Woolworths,713429,Garlic Head each,1.88,10,2026-09-17,Estimated 10 cloves per head
+Tortilla,Coles,6767709,Original Burrito 12 Tortillas,4.50,12,2026-09-17,
+Tortilla,Woolworths,333915,Mission Original Tortillas 12 pack,4.50,12,2026-09-17,
+Iceberg Lettuce,Coles,4584071,Iceberg Lettuce each,3.90,1,2026-09-17,
+Iceberg Lettuce,Woolworths,154340,Iceberg Lettuce each,3.00,1,2026-09-17,
+Tomato,Coles,4594712,Roma Tomatoes Loose,0.62,1,2026-09-17,One approximately 70g tomato
+Tomato,Woolworths,149864,Tomato Roma Red each,0.80,1,2026-09-17,
+Lemon,Coles,1866747,Seedless Lemon 4 Pack,5.50,4,2026-09-17,
+Lemon,Woolworths,259514,Lemon Loose each,1.38,1,2026-09-17,
+Egg,Coles,5178633,Cage Free Eggs 12 Pack,5.90,12,2026-09-17,
+Egg,Woolworths,165367,Woolworths 12 Extra Large Cage Free Eggs,5.70,12,2026-09-17,
+Spring Onion,Coles,408419,Spring Onions 1 Bunch,3.00,6,2026-09-17,Estimated 6 stalks per bunch
+Spring Onion,Woolworths,147603,Spring Onion Bunch each,3.00,6,2026-09-17,Estimated 6 stalks per bunch
+Celery Stalk,Coles,4845732,Celery Bunch each,4.00,10,2026-09-17,Estimated 10 stalks per bunch
+Celery Stalk,Woolworths,135918,Celery Fresh Whole each,4.50,10,2026-09-17,Estimated 10 stalks per bunch

@@ -12,4 +12,10 @@
     <ProjectReference Include="..\FlatPlate.Core\FlatPlate.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Data\Seed\price-seed.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
