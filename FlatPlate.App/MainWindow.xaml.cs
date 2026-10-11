@@ -36,6 +36,7 @@ public partial class MainWindow : Window
 
         _context = new FlatPlateDbContext(databaseOptions);
         _context.Database.EnsureCreated();
+        IngredientSeedData.AddMissingIngredients(_context);
         RecipeSeedData.AddMissingRecipes(_context);
 
         var planRepository = new Repository<PlannedMeal>(_context);
