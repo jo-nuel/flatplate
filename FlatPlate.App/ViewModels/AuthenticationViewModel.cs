@@ -185,6 +185,34 @@ public sealed class AuthenticationViewModel : ViewModelBase
         }
     }
 
+    public async Task<bool> RequestEmailVerificationAsync(
+        CancellationToken cancellationToken = default)
+    {
+        if (!BeginRequest())
+        {
+            return false;
+        }
+
+        try
+        {
+            var result = await _apiClient.RequestEmailVerificationAsync(
+                new RequestEmailVerificationRequest(Email),
+                cancellationToken);
+            if (!result.IsSuccess)
+            {
+                ShowFailure(result);
+                return false;
+            }
+
+            StatusMessage = result.Value!.Message;
+            return true;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     public async Task<bool> RequestPasswordResetAsync(
         CancellationToken cancellationToken = default)
     {

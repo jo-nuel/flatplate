@@ -36,6 +36,14 @@ public sealed class AuthenticationApiClient : IAuthenticationApiClient
             request,
             cancellationToken);
 
+    public Task<AuthenticationClientResult<AccountMessageResponse>> RequestEmailVerificationAsync(
+        RequestEmailVerificationRequest request,
+        CancellationToken cancellationToken = default) =>
+        PostAsync<RequestEmailVerificationRequest, AccountMessageResponse>(
+            "auth/request-email-verification",
+            request,
+            cancellationToken);
+
     public Task<AuthenticationClientResult<AuthenticationResponse>> SignInAsync(
         SignInRequest request,
         CancellationToken cancellationToken = default) =>

@@ -131,6 +131,47 @@ public sealed class AuthenticationServiceTests
     }
 
     [Test]
+    public async Task RequestEmailVerification_ThrottlesRepeatedMessages()
+    {
+        await using var environment = await AuthenticationTestEnvironment.CreateAsync();
+        await environment.Service.RegisterAsync(new(
+            "Jonathan",
+            "jonathan@example.com",
+            Password,
+            Password));
+
+        var immediate = await environment.Service.RequestEmailVerificationAsync(new(
+            "jonathan@example.com"));
+        environment.Clock.Advance(TimeSpan.FromMinutes(1));
+        var afterCooldown = await environment.Service.RequestEmailVerificationAsync(new(
+            "jonathan@example.com"));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(immediate.IsSuccess, Is.True);
+            Assert.That(afterCooldown.IsSuccess, Is.True);
+            Assert.That(environment.Messages.VerificationMessagesSent, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
+    public async Task RequestPasswordReset_ThrottlesRepeatedMessages()
+    {
+        await using var environment = await AuthenticationTestEnvironment.CreateAsync();
+        await environment.RegisterAndVerifyAsync();
+
+        await environment.Service.RequestPasswordResetAsync(new(
+            "jonathan@example.com"));
+        await environment.Service.RequestPasswordResetAsync(new(
+            "jonathan@example.com"));
+        environment.Clock.Advance(TimeSpan.FromMinutes(1));
+        await environment.Service.RequestPasswordResetAsync(new(
+            "jonathan@example.com"));
+
+        Assert.That(environment.Messages.PasswordResetMessagesSent, Is.EqualTo(2));
+    }
+
+    [Test]
     public void OneTimeCode_CannotBeReusedForAnotherPurpose()
     {
         var codes = new OneTimeCodeService(
@@ -239,12 +280,17 @@ public sealed class AuthenticationServiceTests
 
         public string? PasswordResetCode { get; private set; }
 
+        public int VerificationMessagesSent { get; private set; }
+
+        public int PasswordResetMessagesSent { get; private set; }
+
         public Task SendEmailVerificationAsync(
             UserAccount account,
             string code,
             CancellationToken cancellationToken = default)
         {
             VerificationCode = code;
+            VerificationMessagesSent++;
             return Task.CompletedTask;
         }
 
@@ -254,6 +300,7 @@ public sealed class AuthenticationServiceTests
             CancellationToken cancellationToken = default)
         {
             PasswordResetCode = code;
+            PasswordResetMessagesSent++;
             return Task.CompletedTask;
         }
     }

@@ -98,6 +98,26 @@ public sealed class AuthenticationViewModelTests
     }
 
     [Test]
+    public async Task RequestEmailVerificationAsync_Success_ShowsSafeStatus()
+    {
+        var session = new AuthenticationSession(TimeProvider.System);
+        var api = new StubAuthenticationApiClient();
+        var viewModel = new AuthenticationViewModel(api, session)
+        {
+            Email = "jonathan@example.com"
+        };
+
+        var requested = await viewModel.RequestEmailVerificationAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(requested, Is.True);
+            Assert.That(viewModel.StatusMessage, Is.EqualTo("Verification requested."));
+            Assert.That(viewModel.CanSubmit, Is.True);
+        });
+    }
+
+    [Test]
     public void SignOutCommand_ActiveSession_LocksShell()
     {
         var clock = new FixedTimeProvider(
@@ -153,6 +173,12 @@ public sealed class AuthenticationViewModelTests
             CancellationToken cancellationToken = default) =>
             Task.FromResult(AuthenticationClientResult<AccountMessageResponse>.Success(
                 new("Verified.")));
+
+        public Task<AuthenticationClientResult<AccountMessageResponse>> RequestEmailVerificationAsync(
+            RequestEmailVerificationRequest request,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(AuthenticationClientResult<AccountMessageResponse>.Success(
+                new("Verification requested.")));
 
         public Task<AuthenticationClientResult<AuthenticationResponse>> SignInAsync(
             SignInRequest request,

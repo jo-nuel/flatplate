@@ -32,6 +32,19 @@ public sealed class AuthenticationFunctions(IAuthenticationService authenticatio
             authenticationService.VerifyEmailAsync,
             cancellationToken);
 
+    [Function("RequestEmailVerification")]
+    public Task<IActionResult> RequestEmailVerificationAsync(
+        [HttpTrigger(
+            AuthorizationLevel.Anonymous,
+            "post",
+            Route = "auth/request-email-verification")]
+        HttpRequest request,
+        CancellationToken cancellationToken) =>
+        ExecuteAsync<RequestEmailVerificationRequest, AccountMessageResponse>(
+            request,
+            authenticationService.RequestEmailVerificationAsync,
+            cancellationToken);
+
     [Function("SignIn")]
     public Task<IActionResult> SignInAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/sign-in")]

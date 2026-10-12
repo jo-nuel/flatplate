@@ -18,6 +18,7 @@ public sealed class AuthenticationService : IAuthenticationService
 {
     private static readonly TimeSpan VerificationCodeLifetime = TimeSpan.FromMinutes(30);
     private static readonly TimeSpan ResetCodeLifetime = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan MessageCooldown = TimeSpan.FromMinutes(1);
     private const string InvalidTokenMessage = "The code is invalid or has expired.";
 
     private readonly AuthenticationDbContext _dbContext;
@@ -85,6 +86,7 @@ public sealed class AuthenticationService : IAuthenticationService
             code,
             OneTimeCodePurpose.EmailVerification);
         account.EmailVerificationTokenExpiresAtUtc = now.Add(VerificationCodeLifetime);
+        account.EmailVerificationSentAtUtc = now;
         _dbContext.UserAccounts.Add(account);
 
         try
@@ -141,6 +143,42 @@ public sealed class AuthenticationService : IAuthenticationService
             "Your email has been verified. You can now sign in."));
     }
 
+    public async Task<AuthenticationResult<AccountMessageResponse>> RequestEmailVerificationAsync(
+        RequestEmailVerificationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var errors = AuthenticationValidator.Validate(request);
+        if (errors.Count > 0)
+        {
+            return AuthenticationResult<AccountMessageResponse>.Invalid(errors);
+        }
+
+        var account = await FindByEmailAsync(request.Email, cancellationToken);
+        var now = _timeProvider.GetUtcNow();
+        if (account is not null
+            && !account.IsEmailVerified
+            && CanSendMessage(account.EmailVerificationSentAtUtc, now))
+        {
+            var code = _codeService.GenerateCode();
+            account.EmailVerificationTokenHash = _codeService.Protect(
+                account.NormalizedEmail,
+                code,
+                OneTimeCodePurpose.EmailVerification);
+            account.EmailVerificationTokenExpiresAtUtc = now.Add(
+                VerificationCodeLifetime);
+            account.EmailVerificationSentAtUtc = now;
+            account.UpdatedAtUtc = now;
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _messageSender.SendEmailVerificationAsync(
+                account,
+                code,
+                cancellationToken);
+        }
+
+        return AuthenticationResult<AccountMessageResponse>.Success(new(
+            "If that email belongs to an unverified account, a new code has been sent."));
+    }
+
     public async Task<AuthenticationResult<AuthenticationResponse>> SignInAsync(
         SignInRequest request,
         CancellationToken cancellationToken = default)
@@ -195,15 +233,17 @@ public sealed class AuthenticationService : IAuthenticationService
         }
 
         var account = await FindByEmailAsync(request.Email, cancellationToken);
-        if (account is not null)
+        var now = _timeProvider.GetUtcNow();
+        if (account is not null
+            && CanSendMessage(account.PasswordResetSentAtUtc, now))
         {
-            var now = _timeProvider.GetUtcNow();
             var code = _codeService.GenerateCode();
             account.PasswordResetTokenHash = _codeService.Protect(
                 account.NormalizedEmail,
                 code,
                 OneTimeCodePurpose.PasswordReset);
             account.PasswordResetTokenExpiresAtUtc = now.Add(ResetCodeLifetime);
+            account.PasswordResetSentAtUtc = now;
             account.UpdatedAtUtc = now;
             await _dbContext.SaveChangesAsync(cancellationToken);
             await _messageSender.SendPasswordResetAsync(
@@ -261,6 +301,11 @@ public sealed class AuthenticationService : IAuthenticationService
 
     private static string NormalizeEmail(string email) =>
         email.Trim().ToUpperInvariant();
+
+    private static bool CanSendMessage(
+        DateTimeOffset? lastSentAtUtc,
+        DateTimeOffset now) =>
+        lastSentAtUtc is null || now - lastSentAtUtc >= MessageCooldown;
 
     private static AuthenticatedUser ToAuthenticatedUser(UserAccount account) =>
         new(account.Id, account.DisplayName, account.Email, account.IsEmailVerified);

@@ -21,9 +21,13 @@ public sealed class UserAccount
 
     public DateTimeOffset? EmailVerificationTokenExpiresAtUtc { get; set; }
 
+    public DateTimeOffset? EmailVerificationSentAtUtc { get; set; }
+
     public string? PasswordResetTokenHash { get; set; }
 
     public DateTimeOffset? PasswordResetTokenExpiresAtUtc { get; set; }
+
+    public DateTimeOffset? PasswordResetSentAtUtc { get; set; }
 
     public DateTimeOffset CreatedAtUtc { get; set; }
 

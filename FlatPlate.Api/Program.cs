@@ -60,7 +60,53 @@ builder.Services.AddSingleton<IAccessTokenService>(services =>
             jwtSigningKey,
             TimeSpan.FromMinutes(15)),
         services.GetRequiredService<TimeProvider>()));
-builder.Services.AddScoped<IAccountMessageSender, DeferredAccountMessageSender>();
+
+var emailProvider = builder.Configuration["Email:Provider"] ?? "Deferred";
+if (emailProvider.Equals("Smtp", StringComparison.OrdinalIgnoreCase))
+{
+    var smtpSettings = new SmtpSettings(
+        RequiredSetting(builder.Configuration, "Email:Smtp:Host"),
+        RequiredPort(builder.Configuration, "Email:Smtp:Port"),
+        RequiredSecurityMode(builder.Configuration, "Email:Smtp:SecurityMode"),
+        RequiredSetting(builder.Configuration, "Email:Smtp:FromAddress"),
+        builder.Configuration["Email:Smtp:FromName"] ?? "FlatPlate",
+        builder.Configuration["Email:Smtp:Username"],
+        builder.Configuration["Email:Smtp:Password"]);
+    smtpSettings.Validate();
+    builder.Services.AddSingleton(smtpSettings);
+    builder.Services.AddSingleton<IEmailTransport, SmtpEmailTransport>();
+    builder.Services.AddSingleton<IAccountMessageSender, AccountEmailMessageSender>();
+}
+else if (emailProvider.Equals("Deferred", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddScoped<IAccountMessageSender, DeferredAccountMessageSender>();
+}
+else
+{
+    throw new InvalidOperationException(
+        $"Unsupported email provider '{emailProvider}'. Use 'Smtp' or 'Deferred'.");
+}
+
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 builder.Build().Run();
+
+static string RequiredSetting(IConfiguration configuration, string key) =>
+    configuration[key]
+    ?? throw new InvalidOperationException($"Configure {key} before starting the API.");
+
+static int RequiredPort(IConfiguration configuration, string key) =>
+    int.TryParse(RequiredSetting(configuration, key), out var port)
+        ? port
+        : throw new InvalidOperationException($"{key} must be a valid port number.");
+
+static SmtpSecurityMode RequiredSecurityMode(
+    IConfiguration configuration,
+    string key) =>
+    Enum.TryParse<SmtpSecurityMode>(
+        RequiredSetting(configuration, key),
+        ignoreCase: true,
+        out var securityMode)
+        ? securityMode
+        : throw new InvalidOperationException(
+            $"{key} must be 'StartTls' or 'SslOnConnect'.");

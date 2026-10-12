@@ -41,6 +41,9 @@ namespace FlatPlate.Server.Data.Migrations
                         .HasMaxLength(254)
                         .HasColumnType("nvarchar(254)");
 
+                    b.Property<DateTimeOffset?>("EmailVerificationSentAtUtc")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<DateTimeOffset?>("EmailVerificationTokenExpiresAtUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -63,6 +66,9 @@ namespace FlatPlate.Server.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
+
+                    b.Property<DateTimeOffset?>("PasswordResetSentAtUtc")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset?>("PasswordResetTokenExpiresAtUtc")
                         .HasColumnType("datetimeoffset");

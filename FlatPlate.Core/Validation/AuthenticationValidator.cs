@@ -74,6 +74,19 @@ public static class AuthenticationValidator
     }
 
     /// <summary>
+    /// Validates a request for a replacement email-verification code.
+    /// </summary>
+    public static IReadOnlyList<AuthenticationValidationError> Validate(
+        RequestEmailVerificationRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var errors = new List<AuthenticationValidationError>();
+        ValidateEmail(request.Email, errors);
+        return errors;
+    }
+
+    /// <summary>
     /// Validates a request for a password-reset message.
     /// </summary>
     public static IReadOnlyList<AuthenticationValidationError> Validate(

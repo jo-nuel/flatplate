@@ -15,6 +15,10 @@ public interface IAuthenticationApiClient
         VerifyEmailRequest request,
         CancellationToken cancellationToken = default);
 
+    Task<AuthenticationClientResult<AccountMessageResponse>> RequestEmailVerificationAsync(
+        RequestEmailVerificationRequest request,
+        CancellationToken cancellationToken = default);
+
     Task<AuthenticationClientResult<AuthenticationResponse>> SignInAsync(
         SignInRequest request,
         CancellationToken cancellationToken = default);

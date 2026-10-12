@@ -198,6 +198,11 @@
                                     IsEnabled="{Binding CanSubmit}"
                                     Click="VerifyEmail_Click"
                                     Content="Verify email" />
+                            <Button Margin="0,10,0,0"
+                                    Style="{StaticResource SecondaryButton}"
+                                    IsEnabled="{Binding CanSubmit}"
+                                    Click="ResendVerification_Click"
+                                    Content="Send a new code" />
                             <Button Margin="0,8,0,0"
                                     Padding="4"
                                     Background="Transparent"

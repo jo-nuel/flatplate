@@ -45,6 +45,16 @@ public partial class AuthenticationView : UserControl
         }
     }
 
+    private async void ResendVerification_Click(
+        object sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (ViewModel is not null)
+        {
+            await ViewModel.RequestEmailVerificationAsync();
+        }
+    }
+
     private async void RequestReset_Click(object sender, RoutedEventArgs eventArgs)
     {
         if (ViewModel is not null)

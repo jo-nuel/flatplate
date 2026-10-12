@@ -102,6 +102,32 @@ public sealed class AuthenticationApiClientTests
     }
 
     [Test]
+    public async Task RequestEmailVerificationAsync_UsesResendEndpoint()
+    {
+        string? requestedPath = null;
+        var handler = new StubHttpMessageHandler(request =>
+        {
+            requestedPath = request.RequestUri?.AbsolutePath;
+            return JsonResponse(
+                HttpStatusCode.OK,
+                """{ "message": "A new code has been sent." }""");
+        });
+        using var httpClient = CreateHttpClient(handler);
+        var client = new AuthenticationApiClient(httpClient);
+
+        var result = await client.RequestEmailVerificationAsync(new(
+            "jonathan@example.com"));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(
+                requestedPath,
+                Is.EqualTo("/api/auth/request-email-verification"));
+        });
+    }
+
+    [Test]
     public async Task SignInAsync_UnreachableServer_ReturnsNetworkFailure()
     {
         var handler = new StubHttpMessageHandler(
