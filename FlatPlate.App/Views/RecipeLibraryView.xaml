@@ -1,322 +1,109 @@
 <UserControl x:Class="FlatPlate.App.Views.RecipeLibraryView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:models="clr-namespace:FlatPlate.Core.Models;assembly=FlatPlate.Core"
-             Background="#FFF8F1">
+             xmlns:vm="clr-namespace:FlatPlate.App.ViewModels" Background="#FFF8F1">
+    <UserControl.DataContext><vm:RecipeLibraryViewModel /></UserControl.DataContext>
     <UserControl.Resources>
-        <!-- section heading used by the recipe list and details panels -->
-        <Style x:Key="SectionTitleTextStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="0,0,0,10" />
-        </Style>
-
-        <!-- white bordered panel used for the recipe list and details areas -->
         <Style x:Key="PanelBorderStyle" TargetType="Border">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#E6DCCF" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="14" />
+            <Setter Property="Background" Value="White" /><Setter Property="BorderBrush" Value="#E6DCCF" />
+            <Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="6" /><Setter Property="Padding" Value="14" />
+        </Style>
+        <Style x:Key="ConnectedButtonStyle" TargetType="Button">
+            <Style.Triggers><DataTrigger Binding="{Binding Actions}" Value="{x:Null}"><Setter Property="IsEnabled" Value="False" /></DataTrigger></Style.Triggers>
         </Style>
     </UserControl.Resources>
-
     <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <!-- title -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="Recipe Library"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       Margin="0,0,0,4" />
-
-            <TextBlock Text="Browse the household recipes, filter them by cuisine and select a recipe to see its details."
-                       Foreground="#5A5047"
-                       TextWrapping="Wrap" />
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <StackPanel Margin="0,0,0,14">
+            <TextBlock Text="Recipe Library" FontSize="28" FontWeight="Bold" Margin="0,0,0,4" />
+            <TextBlock Text="Browse household recipes and see the ingredient totals for their base servings." Foreground="#5A5047" TextWrapping="Wrap" />
         </StackPanel>
-
-        <!-- toolbar: Phase 1 static UI, no search, filter or add behaviour yet -->
-        <Grid Grid.Row="1" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="180" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <TextBlock Grid.Column="0"
-                       Text="Search"
-                       VerticalAlignment="Center"
-                       Margin="0,0,8,0" />
-
-            <TextBox x:Name="RecipeSearchTextBox"
-                     Grid.Column="1"
-                     Padding="6,5"
-                     VerticalContentAlignment="Center"
-                     Margin="0,0,10,0" />
-
-            <ComboBox x:Name="CuisineFilterComboBox"
-                      Grid.Column="2"
-                      SelectedIndex="0"
-                      Padding="8,5"
-                      VerticalContentAlignment="Center"
-                      Margin="0,0,10,0">
-                <ComboBoxItem Content="All cuisines" />
-            </ComboBox>
-
-            <Button x:Name="AddRecipeButton"
-                    Grid.Column="3"
-                    Content="Add Recipe"
-                    Padding="14,7" />
+        <Grid Grid.Row="1" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="155" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <Label Content="_Search" Target="{Binding ElementName=RecipeSearchTextBox}" Padding="0" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <TextBox Grid.Column="1" x:Name="RecipeSearchTextBox" AutomationProperties.Name="Search recipes by name" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Padding="6,5" Margin="0,0,12,0" />
+            <Label Grid.Column="2" Content="_Cuisine" Target="{Binding ElementName=CuisineFilterComboBox}" Padding="0" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <ComboBox Grid.Column="3" x:Name="CuisineFilterComboBox" AutomationProperties.Name="Recipe cuisine filter" ItemsSource="{Binding CuisineOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedCuisine}" Padding="6,5" Margin="0,0,12,0" />
+            <Button Grid.Column="4" x:Name="AddRecipeButton" AutomationProperties.Name="Add recipe draft" Content="_Add Recipe" Command="{Binding Actions.AddRecipeCommand}" Style="{StaticResource ConnectedButtonStyle}" Padding="12,6" Margin="0,0,8,0" />
+            <Button Grid.Column="5" x:Name="ReloadRecipesButton" Content="_Refresh" Command="{Binding Actions.ReloadCommand}" Style="{StaticResource ConnectedButtonStyle}" Padding="12,6" />
         </Grid>
-
-        <!-- content: recipe list on the left, selected recipe details on the right -->
         <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" MinWidth="360" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="*" MinWidth="260" />
-            </Grid.ColumnDefinitions>
-
-            <!-- recipe list panel -->
-            <Border Grid.Column="0" Style="{StaticResource PanelBorderStyle}">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="3*" MinWidth="310" /><ColumnDefinition Width="14" /><ColumnDefinition Width="2*" MinWidth="260" /></Grid.ColumnDefinitions>
+            <Border Style="{StaticResource PanelBorderStyle}">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0"
-                               Text="Recipes"
-                               Style="{StaticResource SectionTitleTextStyle}" />
-
-                    <!-- recipe cards; empty-library message: Step 5 -->
-                    <Grid Grid.Row="1">
-                        <ListBox x:Name="RecipeCardsListBox"
-                                 SelectionMode="Single"
-                                 Background="Transparent"
-                                 BorderThickness="0"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
-
-                            <!-- the card draws its own hover and selection states -->
-                            <ListBox.ItemContainerStyle>
-                                <Style TargetType="ListBoxItem">
-                                    <Setter Property="Margin" Value="0,0,10,10" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="ListBoxItem">
-                                                <ContentPresenter />
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-
-                            <ListBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type models:Recipe}">
-                                    <Border Width="200"
-                                            Padding="12"
-                                            CornerRadius="6"
-                                            BorderThickness="1">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Background" Value="#FFFCF7" />
-                                                <Setter Property="BorderBrush" Value="#E6DCCF" />
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="BorderBrush" Value="#D4B896" />
-                                                    </Trigger>
-                                                    <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
-                                                                 Value="True">
-                                                        <Setter Property="Background" Value="#FFF1E3" />
-                                                        <Setter Property="BorderBrush" Value="#C8742C" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Name}"
-                                                       FontSize="16"
-                                                       FontWeight="SemiBold"
-                                                       TextWrapping="Wrap"
-                                                       Margin="0,0,0,4" />
-
-                                            <TextBlock Text="{Binding Cuisine}"
-                                                       Foreground="#8A5A2B"
-                                                       Margin="0,0,0,8" />
-
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding PrepMinutes, StringFormat={}{0} min}"
-                                                           Foreground="#5A5047"
-                                                           Margin="0,0,12,0" />
-
-                                                <TextBlock Text="{Binding BaseServings, StringFormat={}{0} servings}"
-                                                           Foreground="#5A5047" />
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-
-                        <!-- empty library message, hidden automatically once the list has items -->
-                        <Border HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                MaxWidth="380"
-                                Margin="12"
-                                Padding="24,20"
-                                Background="#FFF8F1"
-                                BorderBrush="#E6DCCF"
-                                BorderThickness="1"
-                                CornerRadius="6"
-                                IsHitTestVisible="False">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Visibility" Value="Visible" />
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                    <TextBlock Text="Recipes" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10" />
+                    <ListBox Grid.Row="1" x:Name="RecipeCardsListBox" AutomationProperties.Name="Recipe catalogue"
+                             ItemsSource="{Binding VisibleRecipes}" SelectedItem="{Binding SelectedRecipe}" IsSynchronizedWithCurrentItem="False"
+                             Background="Transparent" BorderThickness="0" SelectionMode="Single"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
+                        <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem">
+                            <Setter Property="Margin" Value="0,0,8,8" /><Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+                            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><ContentPresenter /></ControlTemplate></Setter.Value></Setter>
+                        </Style></ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate><DataTemplate>
+                            <Border Width="200" Padding="12" BorderThickness="1" CornerRadius="6">
+                                <Border.Style><Style TargetType="Border">
+                                    <Setter Property="Background" Value="#FFFCF7" /><Setter Property="BorderBrush" Value="#E6DCCF" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HasItems, ElementName=RecipeCardsListBox}"
-                                                     Value="True">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
+                                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="#D4B896" /></Trigger>
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True"><Setter Property="Background" Value="#FFF1E3" /><Setter Property="BorderBrush" Value="#C8742C" /></DataTrigger>
                                     </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-
-                            <StackPanel>
-                                <TextBlock Text="No recipes yet"
-                                           FontSize="18"
-                                           FontWeight="SemiBold"
-                                           Foreground="#8A5A2B"
-                                           TextAlignment="Center"
-                                           Margin="0,0,0,6" />
-
-                                <TextBlock Text="Add your first recipe to start building your library."
-                                           Foreground="#5A5047"
-                                           TextAlignment="Center"
-                                           TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Border>
-                    </Grid>
+                                </Style></Border.Style>
+                                <StackPanel>
+                                    <Grid Height="60" Margin="0,0,0,8" Background="#F6EEE3">
+                                        <Image Source="{Binding Image}" Stretch="UniformToFill" />
+                                        <TextBlock Text="No image" Foreground="#8A5A2B" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers><DataTrigger Binding="{Binding HasImage}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                    <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,4" />
+                                    <TextBlock Text="{Binding CuisineDisplay}" Foreground="#8A5A2B" TextWrapping="Wrap" />
+                                    <WrapPanel Margin="0,6,0,0"><TextBlock Text="{Binding PrepMinutes, StringFormat={}{0} min}" Margin="0,0,12,0" Foreground="#5A5047" /><TextBlock Text="{Binding BaseServings, StringFormat={}{0} servings}" Foreground="#5A5047" /></WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate></ListBox.ItemTemplate>
+                    </ListBox>
+                    <Border Grid.Row="1" x:Name="EmptyRecipesPanel" Padding="16" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border.Style><Style TargetType="Border"><Style.Triggers><DataTrigger Binding="{Binding HasItems, ElementName=RecipeCardsListBox}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></Border.Style>
+                        <StackPanel><TextBlock x:Name="EmptyRecipesTitle" Text="{Binding EmptyTitle}" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" Foreground="#8A5A2B" /><TextBlock Text="{Binding EmptyDescription}" TextWrapping="Wrap" TextAlignment="Center" Foreground="#5A5047" MaxWidth="240" Margin="0,8,0,0" /></StackPanel>
+                    </Border>
                 </Grid>
             </Border>
-
-            <!-- recipe details panel -->
             <Border Grid.Column="2" Style="{StaticResource PanelBorderStyle}">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0"
-                               Text="Recipe Details"
-                               Style="{StaticResource SectionTitleTextStyle}" />
-
-                    <!-- selected recipe fields above, Edit Recipe button pinned below -->
-                    <Grid Grid.Row="1">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <!-- shown while no recipe is selected -->
-                        <TextBlock Grid.Row="0"
-                                   Text="Select a recipe to see its details."
-                                   Foreground="#5A5047"
-                                   TextAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Margin="8">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedItem, ElementName=RecipeCardsListBox}"
-                                                     Value="{x:Null}">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-
-                        <!-- selected recipe fields -->
-                        <ScrollViewer Grid.Row="0"
-                                      DataContext="{Binding SelectedItem, ElementName=RecipeCardsListBox}"
-                                      VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled">
-                            <ScrollViewer.Style>
-                                <Style TargetType="ScrollViewer">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedItem, ElementName=RecipeCardsListBox}"
-                                                     Value="{x:Null}">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ScrollViewer.Style>
-
-                            <StackPanel>
-                                <StackPanel.Resources>
-                                    <Style x:Key="DetailLabelTextStyle" TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="#8A5A2B" />
-                                        <Setter Property="FontSize" Value="12" />
-                                        <Setter Property="Margin" Value="0,10,0,2" />
-                                    </Style>
-                                </StackPanel.Resources>
-
-                                <TextBlock Text="{Binding Name}"
-                                           FontSize="20"
-                                           FontWeight="SemiBold"
-                                           TextWrapping="Wrap" />
-
-                                <TextBlock Text="Cuisine" Style="{StaticResource DetailLabelTextStyle}" />
-                                <TextBlock Text="{Binding Cuisine}" FontSize="14" TextWrapping="Wrap" />
-
-                                <TextBlock Text="Prep time" Style="{StaticResource DetailLabelTextStyle}" />
-                                <TextBlock Text="{Binding PrepMinutes, StringFormat={}{0} minutes}" FontSize="14" />
-
-                                <TextBlock Text="Base servings" Style="{StaticResource DetailLabelTextStyle}" />
-                                <TextBlock Text="{Binding BaseServings}" FontSize="14" />
-                            </StackPanel>
-                        </ScrollViewer>
-
-                        <!-- Phase 1 static UI: no edit behaviour yet, enabled only while a recipe is selected -->
-                        <Button x:Name="EditRecipeButton"
-                                Grid.Row="1"
-                                Content="Edit Recipe"
-                                Padding="14,7"
-                                HorizontalAlignment="Right"
-                                Margin="0,12,0,0">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="IsEnabled" Value="True" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedItem, ElementName=RecipeCardsListBox}"
-                                                     Value="{x:Null}">
-                                            <Setter Property="IsEnabled" Value="False" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <TextBlock Text="Recipe Details" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10" />
+                    <TextBlock Grid.Row="1" Text="Select a recipe to see its details." Foreground="#5A5047" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding SelectedRecipe}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+                    </TextBlock>
+                    <ScrollViewer Grid.Row="1" DataContext="{Binding SelectedRecipe}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding CuisineDisplay}" Foreground="#8A5A2B" Margin="0,6,0,0" />
+                            <TextBlock Text="{Binding PrepMinutes, StringFormat={}{0} prep minutes}" Margin="0,6,0,0" />
+                            <TextBlock Text="{Binding BaseServings, StringFormat={}{0} base servings}" Margin="0,4,0,10" />
+                            <TextBlock Text="{Binding QuantityNotice}" Foreground="#5A5047" TextWrapping="Wrap" Margin="0,0,0,8" />
+                            <ItemsControl x:Name="SelectedIngredientsList" ItemsSource="{Binding Ingredients}" AutomationProperties.Name="Ingredient totals for selected recipe">
+                                <ItemsControl.ItemTemplate><DataTemplate><Border BorderBrush="#E6DCCF" BorderThickness="0,0,0,1" Padding="0,6"><StackPanel>
+                                    <TextBlock Text="{Binding IngredientName}" FontWeight="SemiBold" TextWrapping="Wrap" /><WrapPanel><TextBlock Text="{Binding AmountDisplay}" TextWrapping="Wrap" Margin="0,0,6,0" /><TextBlock Text="{Binding UnitDisplay}" /></WrapPanel>
+                                </StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Button Grid.Row="2" x:Name="EditRecipeButton" AutomationProperties.Name="Edit selected recipe draft" Content="_Edit Recipe" Command="{Binding Actions.EditRecipeCommand}" Padding="12,6" HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <Button.Style><Style TargetType="Button" BasedOn="{StaticResource ConnectedButtonStyle}"><Style.Triggers><DataTrigger Binding="{Binding SelectedRecipe}" Value="{x:Null}"><Setter Property="IsEnabled" Value="False" /></DataTrigger></Style.Triggers></Style></Button.Style>
+                    </Button>
                 </Grid>
             </Border>
         </Grid>
+        <TextBlock Grid.Row="3" x:Name="RecipeStatusText" Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" AutomationProperties.LiveSetting="Polite">
+            <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Foreground" Value="#5A5047" /><Style.Triggers><DataTrigger Binding="{Binding IsError}" Value="True"><Setter Property="Foreground" Value="#B3261E" /></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+        </TextBlock>
+        <Expander Grid.Row="4" x:Name="PendingRecipeDraftsPanel" Header="Pending recipe drafts — not saved" IsExpanded="True" Margin="0,10,0,0">
+            <Expander.Style><Style TargetType="Expander"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding HasPendingDrafts}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Expander.Style>
+            <StackPanel><TextBlock Text="Drafts remain in memory only while this screen is open. No recipe has been saved." Foreground="#5A5047" TextWrapping="Wrap" Margin="0,4,0,4" /><ListBox x:Name="PendingRecipeDraftsList" ItemsSource="{Binding PendingDrafts}" DisplayMemberPath="Summary" MaxHeight="70" AutomationProperties.Name="Confirmed recipe drafts, not saved" /></StackPanel>
+        </Expander>
     </Grid>
 </UserControl>
