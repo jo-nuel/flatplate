@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using FlatPlate.App.Services;
 
 namespace FlatPlate.App.Views;
 
@@ -13,5 +14,13 @@ public partial class PriceBookView : UserControl
     public PriceBookView()
     {
         InitializeComponent();
+    }
+
+    /// <summary>Explicit host composition hook. No context or path is created by this view.</summary>
+    public void Connect(PriceBookCoordinator coordinator)
+    {
+        ArgumentNullException.ThrowIfNull(coordinator);
+        DataContext = coordinator.ViewModel;
+        coordinator.Load();
     }
 }

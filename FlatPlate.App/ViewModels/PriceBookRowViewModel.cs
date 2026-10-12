@@ -30,6 +30,7 @@ public sealed class PriceBookRowViewModel : ViewModelBase
         StoreName = entry.Store.Name;
         Price = entry.Price;
         PackSize = entry.PackSize;
+        BaseUnit = GetBaseUnit(entry.Ingredient);
         PackSizeDisplay = FormatPackSize(entry.PackSize, entry.Ingredient);
         LastUpdated = entry.LastUpdated;
         Source = entry.Source;
@@ -49,6 +50,7 @@ public sealed class PriceBookRowViewModel : ViewModelBase
     /// Pack size in the ingredient's base unit: grams, millilitres or pieces.
     /// </summary>
     public decimal PackSize { get; }
+    public string? BaseUnit { get; }
 
     public string PackSizeDisplay { get; }
 
@@ -78,6 +80,6 @@ public sealed class PriceBookRowViewModel : ViewModelBase
         var amount = packSize.ToString("0.##", CultureInfo.InvariantCulture);
         var unit = GetBaseUnit(ingredient);
 
-        return unit is null ? amount : $"{amount} {unit}";
+        return unit is null ? $"{amount} (unknown unit)" : $"{amount} {unit}";
     }
 }
