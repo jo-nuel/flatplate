@@ -4,14 +4,10 @@ using FlatPlate.Core.Models;
 
 namespace FlatPlate.App.ViewModels;
 
-/// <summary>
-/// Shows one ingredient's pack price at one supermarket in the Price Book table.
-/// </summary>
+/// <summary>Shows one ingredient's pack price at one supermarket in the Price Book table.</summary>
 public sealed class PriceBookRowViewModel : ViewModelBase
 {
-    /// <summary>
-    /// Creates a table row from a price entry whose ingredient and store are loaded.
-    /// </summary>
+    /// <summary>Creates a table row from a price entry whose ingredient and store are loaded.</summary>
     public PriceBookRowViewModel(PriceEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
@@ -46,9 +42,7 @@ public sealed class PriceBookRowViewModel : ViewModelBase
 
     public decimal Price { get; }
 
-    /// <summary>
-    /// Pack size in the ingredient's base unit: grams, millilitres or pieces.
-    /// </summary>
+    /// <summary>Pack size in the ingredient's base unit: grams, millilitres or pieces.</summary>
     public decimal PackSize { get; }
     public string? BaseUnit { get; }
 
@@ -58,9 +52,7 @@ public sealed class PriceBookRowViewModel : ViewModelBase
 
     public PriceSource Source { get; }
 
-    /// <summary>
-    /// Returns the base unit of the ingredient's subtype, or null when the subtype is not recognised.
-    /// </summary>
+    /// <summary>Returns the base unit of the ingredient's subtype, or null when the subtype is not recognised.</summary>
     public static string? GetBaseUnit(Ingredient ingredient)
     {
         ArgumentNullException.ThrowIfNull(ingredient);

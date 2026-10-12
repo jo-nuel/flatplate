@@ -5,9 +5,7 @@ using FlatPlate.Core.Enums;
 
 namespace FlatPlate.App.Services;
 
-/// <summary>
-/// Parses, validates and exports price CSV V1 using explicitly supplied known names.
-/// </summary>
+/// <summary>Parses, validates and exports price CSV V1 using explicitly supplied known names.</summary>
 public sealed class PriceCsvService
 {
     public const string Header = "IngredientName,StoreName,PriceAUD,PackSizeBase,BaseUnit,LastUpdated,Source";
@@ -24,18 +22,14 @@ public sealed class PriceCsvService
     private readonly HashSet<string> _ingredientNames;
     private readonly HashSet<string> _storeNames;
 
-    /// <summary>
-    /// Uses exact known-name matches; no aliases, IDs or database queries are inferred.
-    /// </summary>
+    /// <summary>Uses exact known-name matches; no aliases, IDs or database queries are inferred.</summary>
     public PriceCsvService(IEnumerable<string> ingredientNames, IEnumerable<string> storeNames)
     {
         _ingredientNames = KnownNames(ingredientNames, nameof(ingredientNames));
         _storeNames = KnownNames(storeNames, nameof(storeNames));
     }
 
-    /// <summary>
-    /// Exports only the supplied records. The caller chooses visible or selected rows.
-    /// </summary>
+    /// <summary>Exports only the supplied records. The caller chooses visible or selected rows.</summary>
     public string Export(IEnumerable<PriceCsvRecord> records)
     {
         ArgumentNullException.ThrowIfNull(records);
@@ -70,9 +64,7 @@ public sealed class PriceCsvService
         return output.ToString();
     }
 
-    /// <summary>
-    /// Returns valid rows and physical source-line errors without importing any data.
-    /// </summary>
+    /// <summary>Returns valid rows and physical source-line errors without importing any data.</summary>
     public PriceCsvParseResult Parse(string csvText)
     {
         ArgumentNullException.ThrowIfNull(csvText);

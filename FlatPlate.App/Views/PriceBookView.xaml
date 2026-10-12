@@ -3,13 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FlatPlate.App.ViewModels"
              Background="#F3F8F2">
-    <!-- starts empty; prices are supplied through PriceBookViewModel.LoadPrices -->
+    <!-- Price rows are supplied by the coordinator. -->
     <UserControl.DataContext>
         <vm:PriceBookViewModel />
     </UserControl.DataContext>
 
     <UserControl.Resources>
-        <!-- white bordered panel used for the price table -->
         <Style x:Key="PanelBorderStyle" TargetType="Border">
             <Setter Property="Background" Value="White" />
             <Setter Property="BorderBrush" Value="#D5E3D1" />
@@ -35,7 +34,6 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- title -->
         <StackPanel Grid.Row="0" Margin="0,0,0,16">
             <TextBlock Text="Price Book"
                        FontSize="28"
@@ -47,7 +45,7 @@
                        TextWrapping="Wrap" />
         </StackPanel>
 
-        <!-- host-supplied actions prepare drafts, export visible rows and preview import -->
+        <!-- Host actions handle saving and CSV import/export. -->
         <Grid Grid.Row="1" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />

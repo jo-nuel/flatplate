@@ -2,10 +2,7 @@ using FlatPlate.Core.Enums;
 
 namespace FlatPlate.App.ViewModels;
 
-/// <summary>
-/// Holds the validated values confirmed in the price dialog. Nothing has been saved yet;
-/// a separate operation decides how to persist the draft.
-/// </summary>
+/// <summary>Validated unsaved price values; persistence is handled separately.</summary>
 public sealed class PriceEditDraft
 {
     public required PriceEditMode Mode { get; init; }
@@ -14,24 +11,16 @@ public sealed class PriceEditDraft
 
     public required int StoreId { get; init; }
 
-    /// <summary>
-    /// Package price in AUD.
-    /// </summary>
+    /// <summary>Package price in AUD.</summary>
     public required decimal Price { get; init; }
 
-    /// <summary>
-    /// Pack size in the ingredient's base unit.
-    /// </summary>
+    /// <summary>Pack size in the ingredient's base unit.</summary>
     public required decimal PackSize { get; init; }
 
-    /// <summary>
-    /// The base unit the pack size was entered in: g, mL or pieces.
-    /// </summary>
+    /// <summary>The base unit the pack size was entered in: g, mL or pieces.</summary>
     public required string BaseUnit { get; init; }
 
-    /// <summary>
-    /// Provenance of the confirmed values. Always UserEntered, because the user typed them.
-    /// </summary>
+    /// <summary>Provenance of the confirmed values. Always UserEntered, because the user typed them.</summary>
     public required PriceSource Source { get; init; }
 
     /// <summary>
@@ -40,13 +29,9 @@ public sealed class PriceEditDraft
     /// </summary>
     public required DateTime EnteredAt { get; init; }
 
-    /// <summary>
-    /// Edit only: the source of the record as it was before editing.
-    /// </summary>
+    /// <summary>Edit only: the source of the record as it was before editing.</summary>
     public PriceSource? OriginalSource { get; init; }
 
-    /// <summary>
-    /// Edit only: the LastUpdated value of the record as it was before editing.
-    /// </summary>
+    /// <summary>Edit only: the LastUpdated value of the record as it was before editing.</summary>
     public DateTime? OriginalLastUpdated { get; init; }
 }

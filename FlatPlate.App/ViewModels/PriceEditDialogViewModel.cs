@@ -5,10 +5,7 @@ using FlatPlate.Core.Models;
 
 namespace FlatPlate.App.ViewModels;
 
-/// <summary>
-/// Collects and validates one pack price for the Add Price and Edit Price dialog.
-/// It never changes an existing price; a successful Confirm only produces a draft.
-/// </summary>
+/// <summary>Validates price input and returns a draft without changing the original entry.</summary>
 public sealed class PriceEditDialogViewModel : ViewModelBase
 {
     private const string IngredientField = "Ingredient";
@@ -70,9 +67,7 @@ public sealed class PriceEditDialogViewModel : ViewModelBase
         }
     }
 
-    /// <summary>
-    /// Creates the dialog for a new price, choosing from the supplied ingredients and stores.
-    /// </summary>
+    /// <summary>Creates the dialog for a new price, choosing from the supplied ingredients and stores.</summary>
     public static PriceEditDialogViewModel ForAdd(
         IReadOnlyList<Ingredient> ingredientOptions,
         IReadOnlyList<Store> storeOptions,
@@ -88,9 +83,7 @@ public sealed class PriceEditDialogViewModel : ViewModelBase
             clock);
     }
 
-    /// <summary>
-    /// Creates the dialog for an existing price, starting from the selected row's values.
-    /// </summary>
+    /// <summary>Creates the dialog for an existing price, starting from the selected row's values.</summary>
     public static PriceEditDialogViewModel ForEdit(
         PriceBookRowViewModel selectedPrice,
         IReadOnlyList<Ingredient> ingredientOptions,
@@ -108,18 +101,14 @@ public sealed class PriceEditDialogViewModel : ViewModelBase
             clock);
     }
 
-    /// <summary>
-    /// Raised after Confirm produced a valid draft, so the dialog can close.
-    /// </summary>
+    /// <summary>Raised after Confirm produced a valid draft, so the dialog can close.</summary>
     public event EventHandler? Confirmed;
 
     public PriceEditMode Mode { get; }
 
     public bool IsEditMode => Mode == PriceEditMode.Edit;
 
-    /// <summary>
-    /// Ingredient and store identify a price, so only Add lets the user choose them.
-    /// </summary>
+    /// <summary>Ingredient and store identify a price, so only Add lets the user choose them.</summary>
     public bool CanChangeRecord => !IsEditMode;
 
     public string Title => IsEditMode ? "Edit Price" : "Add Price";
@@ -148,9 +137,7 @@ public sealed class PriceEditDialogViewModel : ViewModelBase
 
     public RelayCommand ConfirmCommand { get; }
 
-    /// <summary>
-    /// The validated draft after a successful Confirm; null otherwise, including after Cancel.
-    /// </summary>
+    /// <summary>The validated draft after a successful Confirm; null otherwise, including after Cancel.</summary>
     public PriceEditDraft? Result
     {
         get => _result;
@@ -193,9 +180,7 @@ public sealed class PriceEditDialogViewModel : ViewModelBase
         set => SetInput(ref _packSizeText, value ?? string.Empty, PackSizeField);
     }
 
-    /// <summary>
-    /// The base unit of the selected ingredient's subtype, shown next to the pack size.
-    /// </summary>
+    /// <summary>The base unit of the selected ingredient's subtype, shown next to the pack size.</summary>
     public string BaseUnitDisplay => SelectedIngredient is null
         ? "—"
         : PriceBookRowViewModel.GetBaseUnit(SelectedIngredient) ?? "unknown unit";
@@ -208,9 +193,7 @@ public sealed class PriceEditDialogViewModel : ViewModelBase
 
     public string PackSizeError => Shown(PackSizeField, GetPackSizeError());
 
-    /// <summary>
-    /// Problems with the combination of fields; a duplicate Add is shown as soon as it is known.
-    /// </summary>
+    /// <summary>Problems with the combination of fields; a duplicate Add is shown as soon as it is known.</summary>
     public string FormError
     {
         get
@@ -222,9 +205,7 @@ public sealed class PriceEditDialogViewModel : ViewModelBase
         }
     }
 
-    /// <summary>
-    /// True when every field and the field combination are valid.
-    /// </summary>
+    /// <summary>True when every field and the field combination are valid.</summary>
     public bool IsValid =>
         GetIngredientError() is null
         && GetStoreError() is null

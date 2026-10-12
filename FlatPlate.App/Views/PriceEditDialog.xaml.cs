@@ -3,16 +3,11 @@ using FlatPlate.App.ViewModels;
 
 namespace FlatPlate.App.Views;
 
-/// <summary>
-/// Lets the user add or edit one pack price and returns the validated values as a draft.
-/// </summary>
+/// <summary>Lets the user add or edit one pack price and returns the validated values as a draft.</summary>
 public partial class PriceEditDialog : Window
 {
     private readonly PriceEditDialogViewModel _viewModel;
 
-    /// <summary>
-    /// Creates the dialog for the supplied Add or Edit view model.
-    /// </summary>
     public PriceEditDialog(PriceEditDialogViewModel viewModel)
     {
         ArgumentNullException.ThrowIfNull(viewModel);

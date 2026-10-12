@@ -1,8 +1,6 @@
 namespace FlatPlate.App.ViewModels;
 
-/// <summary>
-/// Says whether the price dialog creates a new price or changes an existing one.
-/// </summary>
+/// <summary>Distinguishes Add and Edit price dialogs.</summary>
 public enum PriceEditMode
 {
     Add,

@@ -3,9 +3,7 @@ using FlatPlate.Core.Enums;
 
 namespace FlatPlate.App.Services;
 
-/// <summary>
-/// Holds the seven CSV V1 fields without database IDs or inferred time zones.
-/// </summary>
+/// <summary>Holds the seven CSV V1 fields without database IDs or inferred time zones.</summary>
 public sealed record PriceCsvRecord(
     string IngredientName,
     string StoreName,
@@ -15,9 +13,7 @@ public sealed record PriceCsvRecord(
     string LastUpdated,
     PriceSource Source)
 {
-    /// <summary>
-    /// Formats the supplied DateTime using its existing Kind and round-trip format.
-    /// </summary>
+    /// <summary>Formats the supplied DateTime using its existing Kind and round-trip format.</summary>
     public PriceCsvRecord(
         string ingredientName,
         string storeName,
@@ -31,9 +27,7 @@ public sealed record PriceCsvRecord(
     {
     }
 
-    /// <summary>
-    /// Preserves the supplied explicit offset in round-trip format.
-    /// </summary>
+    /// <summary>Preserves the supplied explicit offset in round-trip format.</summary>
     public PriceCsvRecord(
         string ingredientName,
         string storeName,

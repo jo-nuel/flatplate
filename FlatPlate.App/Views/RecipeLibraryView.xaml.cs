@@ -3,14 +3,9 @@ using FlatPlate.App.Services;
 
 namespace FlatPlate.App.Views;
 
-/// <summary>
-/// Shows the household recipe collection with search, cuisine filter and recipe details.
-/// </summary>
+/// <summary>Displays recipes with search, cuisine filtering and ingredient details.</summary>
 public partial class RecipeLibraryView : UserControl
 {
-    /// <summary>
-    /// Creates the Recipe Library view.
-    /// </summary>
     public RecipeLibraryView()
     {
         InitializeComponent();

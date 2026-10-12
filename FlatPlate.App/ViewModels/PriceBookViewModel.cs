@@ -6,9 +6,7 @@ using FlatPlate.Core.Models;
 
 namespace FlatPlate.App.ViewModels;
 
-/// <summary>
-/// Holds the supplied price rows for the Price Book and filters them by supermarket.
-/// </summary>
+/// <summary>Filters loaded Price Book rows by store.</summary>
 public sealed class PriceBookViewModel : ViewModelBase
 {
     public const string AllStoresOption = "All stores";
@@ -25,9 +23,6 @@ public sealed class PriceBookViewModel : ViewModelBase
     private PriceCsvImportPreviewViewModel? _lastImportPreview;
     private bool _isSavingAvailable;
 
-    /// <summary>
-    /// Creates an empty Price Book showing all stores.
-    /// </summary>
     public PriceBookViewModel()
     {
         Prices = new ReadOnlyObservableCollection<PriceBookRowViewModel>(_rows);
@@ -116,14 +111,10 @@ public sealed class PriceBookViewModel : ViewModelBase
         OnPropertyChanged(nameof(EmptyDescription));
     }
 
-    /// <summary>
-    /// Every loaded row, regardless of the store filter.
-    /// </summary>
+    /// <summary>Every loaded row, regardless of the store filter.</summary>
     public ReadOnlyObservableCollection<PriceBookRowViewModel> Prices { get; }
 
-    /// <summary>
-    /// The rows that match the selected store; the table binds to this view.
-    /// </summary>
+    /// <summary>The rows that match the selected store; the table binds to this view.</summary>
     public ICollectionView VisiblePrices { get; }
 
     public string SelectedStore
@@ -144,9 +135,7 @@ public sealed class PriceBookViewModel : ViewModelBase
         set => SetProperty(ref _selectedPrice, value);
     }
 
-    /// <summary>
-    /// Replaces the table rows with the supplied prices, ordered by ingredient then store.
-    /// </summary>
+    /// <summary>Replaces the table rows with the supplied prices, ordered by ingredient then store.</summary>
     public void LoadPrices(IEnumerable<PriceEntry> prices)
     {
         ArgumentNullException.ThrowIfNull(prices);

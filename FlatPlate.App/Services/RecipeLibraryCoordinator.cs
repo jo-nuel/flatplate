@@ -75,9 +75,8 @@ public sealed class RecipeLibraryCoordinator : IDisposable
             var catalogue = PersonBRecipeCatalogue.Parse(files.Read(paths.RecipesPath), files.Read(paths.IngredientsPath));
             var ingredientNames = _data.LoadIngredients().Select(i => i.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var recipeNames = _data.LoadRecipes().Select(r => r.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            // RecipeKey is not persisted by the shared model. A complete ingredient catalogue
-            // with missing recipe names may represent user-renamed/deleted imports. Refuse
-            // ambiguous re-creation rather than silently making another copy of their recipes.
+            // RecipeKey is not persisted. Missing names in a complete catalogue may
+            // be renamed or removed imports; reject ambiguous re-creation.
             if (catalogue.Ingredients.All(i => ingredientNames.Contains(PersonBRecipeLoader.CanonicalName(i.IngredientName)))
                 && catalogue.Recipes.Any(r => !recipeNames.Contains(r.Name)))
                 throw new InvalidDataException("All catalogue ingredients already exist, but some recipe names are missing. Recipes may have been renamed or removed. Nothing was imported; review the existing library before retrying.");

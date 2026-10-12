@@ -1,8 +1,6 @@
 namespace FlatPlate.App.Services;
 
-/// <summary>
-/// Separates valid records from errors; neither collection writes to a database.
-/// </summary>
+/// <summary>Separates valid records from errors; neither collection writes to a database.</summary>
 public sealed class PriceCsvParseResult
 {
     internal PriceCsvParseResult(List<PriceCsvRecord> records, List<PriceCsvRowError> errors)
@@ -18,7 +16,5 @@ public sealed class PriceCsvParseResult
     public bool HasErrors => Errors.Count > 0;
 }
 
-/// <summary>
-/// Identifies the one-based physical start line of an invalid CSV record.
-/// </summary>
+/// <summary>Identifies the one-based physical start line of an invalid CSV record.</summary>
 public sealed record PriceCsvRowError(int LineNumber, string ColumnName, string Message);
