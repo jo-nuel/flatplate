@@ -13,4 +13,10 @@ public partial class PriceCsvImportPreviewWindow : Window
     }
 
     private void OnClose(object sender, RoutedEventArgs args) => Close();
+
+    protected override void OnClosed(EventArgs args)
+    {
+        if (DataContext is PriceCsvImportPreviewViewModel preview) preview.DisconnectImport();
+        base.OnClosed(args);
+    }
 }

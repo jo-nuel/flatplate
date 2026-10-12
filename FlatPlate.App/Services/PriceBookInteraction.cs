@@ -32,7 +32,7 @@ public sealed class PriceBookInteraction : IPriceBookInteraction
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Preview price CSV", Filter = "CSV files (*.csv)|*.csv",
+            Title = "Import price CSV", Filter = "CSV files (*.csv)|*.csv",
             CheckFileExists = true, Multiselect = false,
         };
         return Show(dialog) ? dialog.FileName : null;

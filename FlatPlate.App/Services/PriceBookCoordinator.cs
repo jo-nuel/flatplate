@@ -7,13 +7,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FlatPlate.App.Services;
 
-/// <summary>Read, manual save, export and preview interactions using host-supplied dependencies.</summary>
+/// <summary>Read, manual save, CSV export and confirmed batch import using host-supplied dependencies.</summary>
 public sealed class PriceBookCoordinator : IDisposable
 {
     private readonly PriceBookDataSource _data;
     private readonly IPriceBookInteraction _interaction;
     private readonly PriceCsvFileService _files;
     private readonly PriceBookWriteService? _writer;
+    private readonly PriceCsvImportService? _importer;
     private IReadOnlyList<Ingredient> _ingredients = Array.Empty<Ingredient>();
     private IReadOnlyList<Store> _stores = Array.Empty<Store>();
     private bool _loaded;
@@ -27,6 +28,7 @@ public sealed class PriceBookCoordinator : IDisposable
         _interaction = interaction ?? throw new ArgumentNullException(nameof(interaction));
         _files = files ?? new PriceCsvFileService();
         _writer = writer;
+        _importer = writer is null ? null : new PriceCsvImportService(writer.Context);
         AddPriceCommand = new RelayCommand(() => Run(Add, "Could not prepare a price draft."), () => Ready && _ingredients.Count > 0 && _stores.Count > 0);
         EditPriceCommand = new RelayCommand(() => Run(Edit, "Could not prepare an edit draft."), () => Ready && ViewModel.SelectedPrice is not null);
         ExportCsvCommand = new RelayCommand(() => Run(Export, "Export failed. Check the visible prices and destination file."), () => Ready && ViewModel.VisiblePrices.Cast<object>().Any());
@@ -45,6 +47,7 @@ public sealed class PriceBookCoordinator : IDisposable
     public RelayCommand ReloadCommand { get; }
     public Exception? LastError { get; private set; }
     public bool? LastSaveSucceeded { get; private set; }
+    public bool? LastImportSucceeded { get; private set; }
     public event EventHandler? PriceSaved;
     private bool Ready => _loaded && !_disposed;
 
@@ -64,7 +67,7 @@ public sealed class PriceBookCoordinator : IDisposable
             _ingredients = ingredients; _stores = stores;
             ViewModel.SetStores(stores);
             _loaded = true;
-            ViewModel.SetMessage(_writer is null ? "Prices loaded. Add/Edit prepares drafts; saving is not connected." : "Prices loaded. Manual changes save in UTC; CSV import remains preview only.");
+            ViewModel.SetMessage(_writer is null ? "Prices loaded. Add/Edit prepares drafts; saving is not connected." : "Prices loaded. Manual changes save in UTC; CSV import inserts new pairs only.");
         }, "Could not load prices. Any previously loaded rows are unchanged.");
     }
 
@@ -121,9 +124,14 @@ public sealed class PriceBookCoordinator : IDisposable
         if (Load())
         {
             ViewModel.SelectedPrice = ViewModel.Prices.FirstOrDefault(r => r.IngredientId == draft.IngredientId && r.StoreId == draft.StoreId && ViewModel.VisiblePrices.Contains(r));
-            ViewModel.SetMessage("Price saved. CSV import remains preview only.");
+            ViewModel.SetMessage("Price saved. CSV import inserts new pairs only.");
         }
         else ViewModel.SetMessage("Price saved, but the book could not reload. Refresh before continuing.", true);
+        NotifyPriceSaved();
+    }
+
+    private void NotifyPriceSaved()
+    {
         try { PriceSaved?.Invoke(this, EventArgs.Empty); }
         catch (Exception exception)
         {
@@ -157,14 +165,39 @@ public sealed class PriceBookCoordinator : IDisposable
 
     private void PreviewImport()
     {
+        LastImportSucceeded = null;
         var path = _interaction.ChooseImportFile();
         if (path is null) { ViewModel.SetMessage("Import preview cancelled. Nothing was saved."); return; }
         if (!Load()) return;
         var parsed = Csv().Parse(_files.Read(path));
-        var preview = new PriceCsvImportPreviewViewModel(parsed, _ingredients, _stores, CurrentKeys());
+        var preview = new PriceCsvImportPreviewViewModel(parsed, _ingredients, _stores, CurrentKeys(), forImport: _importer is not null);
+        if (_importer is not null) preview.ConnectImport(() => PersistImport(parsed));
         ViewModel.SetPreview(preview);
-        ViewModel.SetMessage($"Preview only: {preview.Rows.Count} parsed records, {preview.Issues.Count} issues. Nothing was saved.");
-        _interaction.ShowImportPreview(preview);
+        ViewModel.SetMessage(_importer is null ? $"Preview only: {preview.Rows.Count} parsed records, {preview.Issues.Count} issues. Nothing was saved."
+            : $"{preview.Rows.Count} parsed records, {preview.Issues.Count} issues. Nothing is saved until Confirm Import.");
+        try { _interaction.ShowImportPreview(preview); }
+        finally { preview.DisconnectImport(); }
+        if (preview.LastImportError is not null)
+            ViewModel.SetMessage(preview.ImportStatus, true);
+        else if (!preview.HasImported)
+            ViewModel.SetMessage(preview.Issues.Count > 0 ? "Import blocked by the listed problems. Nothing was saved." : "Import preview closed without confirmation. Nothing was saved.");
+    }
+
+    private int PersistImport(PriceCsvParseResult parsed)
+    {
+        if (_disposed || _importer is null) throw new InvalidOperationException("Saving is no longer connected. Nothing was saved.");
+        int count;
+        try { count = _importer.Import(parsed); LastImportSucceeded = true; }
+        catch (Exception exception) when (exception is InvalidDataException or ArgumentException or InvalidOperationException or DbUpdateException or System.Data.Common.DbException)
+        {
+            LastImportSucceeded = false; LastError = exception;
+            ViewModel.SetMessage("Import failed. No records were saved. Review the preview problems and select the CSV again.", true);
+            throw;
+        }
+        if (Load()) ViewModel.SetMessage($"Imported {count} price records. Existing prices were unchanged. The current store filter is preserved.");
+        else ViewModel.SetMessage($"Imported {count} price records, but the book could not reload. The records are saved; refresh before continuing.", true);
+        NotifyPriceSaved();
+        return count;
     }
 
     private PriceCsvService Csv() => new(_ingredients.Select(i => i.Name), _stores.Select(s => s.Name));

@@ -50,7 +50,7 @@ public sealed class PriceBookViewModel : ViewModelBase
     public PriceCsvImportPreviewViewModel? LastImportPreview => _lastImportPreview;
     public string EmptyTitle => _rows.Count == 0 ? "No prices yet" : "No prices for this store";
     public string EmptyDescription => _rows.Count == 0
-        ? IsSavingAvailable ? "Add a price to start the book, or preview a CSV without saving it." : "Prepare a draft or preview a CSV to review prices. Saving is not connected yet."
+        ? IsSavingAvailable ? "Add a price or import a valid CSV to start the book." : "Prepare a draft or preview a CSV to review prices. Saving is not connected yet."
         : "Choose another store or All stores to see available prices.";
 
     internal void ConnectActions(PriceBookCoordinator actions)
