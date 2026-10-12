@@ -5,9 +5,11 @@ namespace FlatPlate.App.Authentication;
 /// <summary>
 /// Keeps authentication data in memory and removes it when the token expires or the user signs out.
 /// </summary>
-public sealed class AuthenticationSession : IAuthenticationSession
+public sealed class AuthenticationSession : IAuthenticationSession, IDisposable
 {
     private readonly TimeProvider _timeProvider;
+    private readonly SynchronizationContext? _synchronizationContext;
+    private CancellationTokenSource? _expiryCancellation;
     private string? _accessToken;
     private DateTimeOffset _expiresAtUtc;
     private AuthenticatedUser? _currentUser;
@@ -18,6 +20,7 @@ public sealed class AuthenticationSession : IAuthenticationSession
     {
         _timeProvider = timeProvider
             ?? throw new ArgumentNullException(nameof(timeProvider));
+        _synchronizationContext = SynchronizationContext.Current;
     }
 
     public AuthenticatedUser? CurrentUser => IsAuthenticated ? _currentUser : null;
@@ -42,6 +45,7 @@ public sealed class AuthenticationSession : IAuthenticationSession
         _accessToken = response.AccessToken;
         _expiresAtUtc = response.ExpiresAtUtc;
         _currentUser = response.User;
+        ScheduleExpiry(response.ExpiresAtUtc - _timeProvider.GetUtcNow());
         SessionChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -65,6 +69,9 @@ public sealed class AuthenticationSession : IAuthenticationSession
     public void Clear()
     {
         var hadSession = _currentUser is not null || _accessToken is not null;
+        _expiryCancellation?.Cancel();
+        _expiryCancellation?.Dispose();
+        _expiryCancellation = null;
         _accessToken = null;
         _expiresAtUtc = default;
         _currentUser = null;
@@ -73,5 +80,53 @@ public sealed class AuthenticationSession : IAuthenticationSession
         {
             SessionChanged?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    public void Dispose()
+    {
+        _expiryCancellation?.Cancel();
+        _expiryCancellation?.Dispose();
+        _expiryCancellation = null;
+    }
+
+    private void ScheduleExpiry(TimeSpan delay)
+    {
+        _expiryCancellation?.Cancel();
+        _expiryCancellation?.Dispose();
+        _expiryCancellation = new CancellationTokenSource();
+        _ = ExpireAsync(delay, _expiryCancellation.Token);
+    }
+
+    private async Task ExpireAsync(TimeSpan delay, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(delay, _timeProvider, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        if (_synchronizationContext is null)
+        {
+            Clear();
+            return;
+        }
+
+        _synchronizationContext.Post(
+            _ =>
+            {
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    Clear();
+                }
+            },
+            null);
     }
 }

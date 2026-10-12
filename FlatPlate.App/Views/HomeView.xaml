@@ -1,0 +1,96 @@
+<UserControl x:Class="FlatPlate.App.Views.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="980"
+                    Margin="32"
+                    HorizontalAlignment="Center">
+            <TextBlock FontSize="30"
+                       FontWeight="SemiBold"
+                       Foreground="#173D2B"
+                       Text="{Binding WelcomeMessage}" />
+            <TextBlock Margin="0,8,0,28"
+                       FontSize="15"
+                       Foreground="#58665E"
+                       Text="Build your week, stay within budget, and turn every recipe into one organised shop." />
+
+            <UniformGrid Columns="3">
+                <Border Margin="0,0,12,12"
+                        Padding="22"
+                        Background="White"
+                        CornerRadius="12">
+                    <StackPanel>
+                        <TextBlock FontSize="28"
+                                   Text="1" />
+                        <TextBlock Margin="0,12,0,5"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Text="Choose recipes" />
+                        <TextBlock Foreground="#66736B"
+                                   TextWrapping="Wrap"
+                                   Text="Browse the recipe library and choose meals that fit your week." />
+                    </StackPanel>
+                </Border>
+                <Border Margin="6,0,6,12"
+                        Padding="22"
+                        Background="White"
+                        CornerRadius="12">
+                    <StackPanel>
+                        <TextBlock FontSize="28"
+                                   Text="2" />
+                        <TextBlock Margin="0,12,0,5"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Text="Plan seven days" />
+                        <TextBlock Foreground="#66736B"
+                                   TextWrapping="Wrap"
+                                   Text="Place meals into the weekly planner and set your shopping budget." />
+                    </StackPanel>
+                </Border>
+                <Border Margin="12,0,0,12"
+                        Padding="22"
+                        Background="White"
+                        CornerRadius="12">
+                    <StackPanel>
+                        <TextBlock FontSize="28"
+                                   Text="3" />
+                        <TextBlock Margin="0,12,0,5"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Text="Shop with confidence" />
+                        <TextBlock Foreground="#66736B"
+                                   TextWrapping="Wrap"
+                                   Text="Use one merged list and compare the estimated basket price." />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Border Margin="0,18,0,0"
+                    Padding="24"
+                    Background="#E5F2EA"
+                    CornerRadius="12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock FontSize="19"
+                                   FontWeight="SemiBold"
+                                   Foreground="#225E41"
+                                   Text="Start with the Weekly Planner" />
+                        <TextBlock Margin="0,6,0,0"
+                                   Foreground="#496356"
+                                   Text="Select the Weekly Planner tab above to build your first meal plan." />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1"
+                               Margin="24,0,0,0"
+                               VerticalAlignment="Center"
+                               FontSize="32"
+                               Foreground="#2F7D57"
+                               Text="→" />
+                </Grid>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
