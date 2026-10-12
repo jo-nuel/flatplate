@@ -53,6 +53,7 @@ public sealed class SeedDataTests
             Assert.That(_context.Recipes.Count(), Is.EqualTo(8));
             Assert.That(_context.RecipeIngredients.Count(), Is.EqualTo(53));
             Assert.That(_context.Stores.Count(), Is.EqualTo(2));
+            Assert.That(_context.PriceEntries.Count(), Is.EqualTo(70));
         });
     }
 
@@ -71,6 +72,7 @@ public sealed class SeedDataTests
             Assert.That(_context.Recipes.Count(), Is.EqualTo(8));
             Assert.That(_context.RecipeIngredients.Count(), Is.EqualTo(53));
             Assert.That(_context.Stores.Count(), Is.EqualTo(2));
+            Assert.That(_context.PriceEntries.Count(), Is.EqualTo(70));
         });
     }
 
@@ -106,10 +108,43 @@ public sealed class SeedDataTests
         Assert.That(storeNames, Is.EqualTo(new[] { "Coles", "Woolworths" }));
     }
 
+    /// <summary>
+    /// Confirms that every starter ingredient has a dated price at both stores.
+    /// </summary>
+    [Test]
+    public void AddMissingPrices_StarterCatalogue_PricesEveryIngredientAtBothStores()
+    {
+        SeedAll();
+
+        var collectionDate = new DateTime(2026, 9, 17);
+        var prices = _context.PriceEntries.ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                prices,
+                Has.Count.EqualTo(
+                    _context.Ingredients.Count() * _context.Stores.Count()));
+            Assert.That(prices, Has.All.Matches<FlatPlate.Core.Models.PriceEntry>(
+                entry => entry.Price > 0 && entry.PackSize > 0));
+            Assert.That(prices, Has.All.Matches<FlatPlate.Core.Models.PriceEntry>(
+                entry => entry.LastUpdated == collectionDate));
+            Assert.That(prices, Has.All.Matches<FlatPlate.Core.Models.PriceEntry>(
+                entry => entry.Source == FlatPlate.Core.Enums.PriceSource.Seeded));
+        });
+    }
+
     private void SeedAll()
     {
         IngredientSeedData.AddMissingIngredients(_context);
         RecipeSeedData.AddMissingRecipes(_context);
         StoreSeedData.AddMissingStores(_context);
+        PriceSeedData.AddMissingPrices(
+            _context,
+            Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "Data",
+                "Seed",
+                "price-seed.csv"));
     }
 }

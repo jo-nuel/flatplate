@@ -39,6 +39,7 @@ public partial class MainWindow : Window
         IngredientSeedData.AddMissingIngredients(_context);
         RecipeSeedData.AddMissingRecipes(_context);
         StoreSeedData.AddMissingStores(_context);
+        PriceSeedData.AddMissingPrices(_context);
 
         var planRepository = new Repository<PlannedMeal>(_context);
         var planService = new WeeklyPlanService(planRepository);
