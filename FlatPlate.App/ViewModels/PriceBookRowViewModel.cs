@@ -56,18 +56,27 @@ public sealed class PriceBookRowViewModel : ViewModelBase
 
     public PriceSource Source { get; }
 
-    private static string FormatPackSize(decimal packSize, Ingredient ingredient)
+    /// <summary>
+    /// Returns the base unit of the ingredient's subtype, or null when the subtype is not recognised.
+    /// </summary>
+    public static string? GetBaseUnit(Ingredient ingredient)
     {
-        var amount = packSize.ToString("0.##", CultureInfo.InvariantCulture);
+        ArgumentNullException.ThrowIfNull(ingredient);
 
-        // The unit comes only from the ingredient subtype; an unknown subtype shows no unit.
-        string? unit = ingredient switch
+        // The unit comes only from the ingredient subtype, never from its name.
+        return ingredient switch
         {
             WeightIngredient => "g",
             VolumeIngredient => "mL",
             CountIngredient => "pieces",
             _ => null,
         };
+    }
+
+    private static string FormatPackSize(decimal packSize, Ingredient ingredient)
+    {
+        var amount = packSize.ToString("0.##", CultureInfo.InvariantCulture);
+        var unit = GetBaseUnit(ingredient);
 
         return unit is null ? amount : $"{amount} {unit}";
     }
