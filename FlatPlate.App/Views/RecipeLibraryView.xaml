@@ -19,6 +19,7 @@
             <TextBlock Text="Browse household recipes and see the ingredient totals for their base servings." Foreground="#5A5047" TextWrapping="Wrap" />
         </StackPanel>
         <Grid Grid.Row="1" Margin="0,0,0,14">
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
             <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="155" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <Label Content="_Search" Target="{Binding ElementName=RecipeSearchTextBox}" Padding="0" VerticalAlignment="Center" Margin="0,0,8,0" />
             <TextBox Grid.Column="1" x:Name="RecipeSearchTextBox" AutomationProperties.Name="Search recipes by name" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Padding="6,5" Margin="0,0,12,0" />
@@ -26,6 +27,11 @@
             <ComboBox Grid.Column="3" x:Name="CuisineFilterComboBox" AutomationProperties.Name="Recipe cuisine filter" ItemsSource="{Binding CuisineOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedCuisine}" Padding="6,5" Margin="0,0,12,0" />
             <Button Grid.Column="4" x:Name="AddRecipeButton" AutomationProperties.Name="Add recipe" Content="_Add Recipe" Command="{Binding Actions.AddRecipeCommand}" Style="{StaticResource ConnectedButtonStyle}" Padding="12,6" Margin="0,0,8,0" />
             <Button Grid.Column="5" x:Name="ReloadRecipesButton" Content="_Refresh" Command="{Binding Actions.ReloadCommand}" Style="{StaticResource ConnectedButtonStyle}" Padding="12,6" />
+            <Button Grid.Row="1" Grid.ColumnSpan="6" x:Name="ImportRecipeCsvButton"
+                    AutomationProperties.Name="Import recipe catalogue from two CSV files"
+                    Content="_Import Recipe CSVs" Command="{Binding Actions.ImportRecipeCsvCommand}"
+                    Style="{StaticResource ConnectedButtonStyle}" Padding="12,6" Margin="0,8,0,0"
+                    HorizontalAlignment="Right" />
         </Grid>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions><ColumnDefinition Width="3*" MinWidth="310" /><ColumnDefinition Width="14" /><ColumnDefinition Width="2*" MinWidth="260" /></Grid.ColumnDefinitions>

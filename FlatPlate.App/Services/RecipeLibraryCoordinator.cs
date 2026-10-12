@@ -6,14 +6,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FlatPlate.App.Services;
 
-/// <summary>Read and manual save workflow; the host retains context ownership.</summary>
+/// <summary>Read, manual save and explicitly confirmed recipe CSV workflow; the host retains context ownership.</summary>
 public sealed class RecipeLibraryCoordinator : IDisposable
 {
     private readonly RecipeLibraryDataSource _data;
     private readonly IRecipeLibraryInteraction _interaction;
     private readonly RecipeLibraryWriteService? _writer;
+    private readonly PersonBRecipeLoader? _recipeLoader;
     private IReadOnlyList<Ingredient> _ingredients = Array.Empty<Ingredient>();
-    private bool _loaded, _disposed;
+    private bool _loaded, _disposed, _importing;
 
     public RecipeLibraryCoordinator(RecipeLibraryViewModel viewModel, RecipeLibraryDataSource data, IRecipeLibraryInteraction interaction, RecipeLibraryWriteService? writer = null)
     {
@@ -21,9 +22,11 @@ public sealed class RecipeLibraryCoordinator : IDisposable
         _data = data ?? throw new ArgumentNullException(nameof(data));
         _interaction = interaction ?? throw new ArgumentNullException(nameof(interaction));
         _writer = writer;
+        _recipeLoader = writer is null ? null : new PersonBRecipeLoader(writer.Context);
         AddRecipeCommand = new RelayCommand(() => Run(Add, "Could not prepare a recipe draft."), () => Ready && _ingredients.Count > 0);
         EditRecipeCommand = new RelayCommand(() => Run(Edit, "Could not prepare an edit draft."), () => Ready && ViewModel.SelectedRecipe is not null && _ingredients.Count > 0);
-        ReloadCommand = new RelayCommand(() => Load(), () => !_disposed);
+        ImportRecipeCsvCommand = new RelayCommand(() => Run(ImportRecipes, "Recipe CSV import failed. No records were saved. Check the files and refresh before retrying."), () => Ready && _recipeLoader is not null);
+        ReloadCommand = new RelayCommand(() => Load(), () => !_disposed && !_importing);
         ViewModel.ConnectActions(this); ViewModel.PropertyChanged += OnChanged;
         ViewModel.SetSavingAvailable(writer is not null);
     }
@@ -32,11 +35,14 @@ public sealed class RecipeLibraryCoordinator : IDisposable
     public RelayCommand AddRecipeCommand { get; }
     public RelayCommand EditRecipeCommand { get; }
     public RelayCommand ReloadCommand { get; }
+    public RelayCommand ImportRecipeCsvCommand { get; }
     public Exception? LastError { get; private set; }
     public bool? LastSaveSucceeded { get; private set; }
     public int? LastSavedRecipeId { get; private set; }
+    public bool? LastRecipeImportSucceeded { get; private set; }
+    public PersonBRecipeLoadResult? LastRecipeImportResult { get; private set; }
     public event EventHandler? RecipeSaved;
-    private bool Ready => _loaded && !_disposed;
+    private bool Ready => _loaded && !_disposed && !_importing;
 
     public bool Load() => Run(() =>
     {
@@ -53,6 +59,53 @@ public sealed class RecipeLibraryCoordinator : IDisposable
         {
             var model = RecipeEditDialogViewModel.ForAdd(_ingredients); model.SaveOnConfirm = _writer is not null; Open(model, null);
         }
+    }
+
+    private void ImportRecipes()
+    {
+        // RelayCommand.Execute can be called directly, so guard writes here too.
+        if (!Ready || _recipeLoader is null) return;
+        LastRecipeImportSucceeded = null; LastRecipeImportResult = null;
+        _importing = true; RefreshCommands();
+        try
+        {
+            var paths = _interaction.ChooseRecipeImportFiles();
+            if (paths is null) { ViewModel.SetStatus("Recipe CSV selection cancelled. No records were changed."); return; }
+            var files = new PriceCsvFileService();
+            var catalogue = PersonBRecipeCatalogue.Parse(files.Read(paths.RecipesPath), files.Read(paths.IngredientsPath));
+            var ingredientNames = _data.LoadIngredients().Select(i => i.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var recipeNames = _data.LoadRecipes().Select(r => r.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            // RecipeKey is not persisted by the shared model. A complete ingredient catalogue
+            // with missing recipe names may represent user-renamed/deleted imports. Refuse
+            // ambiguous re-creation rather than silently making another copy of their recipes.
+            if (catalogue.Ingredients.All(i => ingredientNames.Contains(PersonBRecipeLoader.CanonicalName(i.IngredientName)))
+                && catalogue.Recipes.Any(r => !recipeNames.Contains(r.Name)))
+                throw new InvalidDataException("All catalogue ingredients already exist, but some recipe names are missing. Recipes may have been renamed or removed. Nothing was imported; review the existing library before retrying.");
+            if (!_interaction.ConfirmRecipeImport(catalogue))
+            {
+                ViewModel.SetStatus("Recipe import cancelled. No records were changed."); return;
+            }
+            LastRecipeImportSucceeded = false;
+            var result = _recipeLoader.Load(catalogue);
+            LastRecipeImportResult = result; LastRecipeImportSucceeded = true;
+            var message = result.RecipesAdded == 0 && result.IngredientsAdded == 0
+                ? "Catalogue already present. No new records were added."
+                : $"Imported {result.RecipesAdded} recipes, {result.AssociationsAdded} ingredient associations and {result.IngredientsAdded} new ingredients. Prices were unchanged.";
+            if (Load()) ViewModel.SetStatus(message);
+            else ViewModel.SetStatus(message + " The library could not reload. Refresh before continuing.", true);
+            if (result.RecipesAdded > 0)
+            {
+                try { RecipeSaved?.Invoke(this, EventArgs.Empty); }
+                catch (Exception exception) { LastError = exception; ViewModel.SetStatus(message + " A dependent screen could not refresh.", true); }
+            }
+        }
+        catch
+        {
+            // A read/validation/save failure never masquerades as cancellation or success.
+            if (LastRecipeImportSucceeded != true) LastRecipeImportSucceeded = false;
+            throw;
+        }
+        finally { _importing = false; RefreshCommands(); }
     }
     private void Edit()
     {
@@ -91,14 +144,14 @@ public sealed class RecipeLibraryCoordinator : IDisposable
     {
         if (_disposed) return false;
         try { LastError = null; action(); return true; }
-        catch (Exception exception) when (exception is InvalidDataException or IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or System.Data.Common.DbException)
+        catch (Exception exception) when (exception is InvalidDataException or IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or OverflowException or DbUpdateException or System.Data.Common.DbException)
         {
             LastError = exception; ViewModel.SetStatus(exception is InvalidDataException ? exception.Message : message, true); return false;
         }
         finally { RefreshCommands(); }
     }
     private void OnChanged(object? sender, PropertyChangedEventArgs args) => RefreshCommands();
-    private void RefreshCommands() { AddRecipeCommand.RaiseCanExecuteChanged(); EditRecipeCommand.RaiseCanExecuteChanged(); ReloadCommand.RaiseCanExecuteChanged(); }
+    private void RefreshCommands() { AddRecipeCommand.RaiseCanExecuteChanged(); EditRecipeCommand.RaiseCanExecuteChanged(); ImportRecipeCsvCommand.RaiseCanExecuteChanged(); ReloadCommand.RaiseCanExecuteChanged(); }
     public void Dispose()
     {
         if (_disposed) return;
