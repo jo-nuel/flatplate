@@ -3,33 +3,37 @@ using System.IO;
 using FlatPlate.App.ViewModels;
 using FlatPlate.Core.Enums;
 using FlatPlate.Core.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FlatPlate.App.Services;
 
-/// <summary>Read, draft, export and preview interactions. Deliberately contains no writer.</summary>
+/// <summary>Read, manual save, export and preview interactions using host-supplied dependencies.</summary>
 public sealed class PriceBookCoordinator : IDisposable
 {
     private readonly PriceBookDataSource _data;
     private readonly IPriceBookInteraction _interaction;
     private readonly PriceCsvFileService _files;
+    private readonly PriceBookWriteService? _writer;
     private IReadOnlyList<Ingredient> _ingredients = Array.Empty<Ingredient>();
     private IReadOnlyList<Store> _stores = Array.Empty<Store>();
     private bool _loaded;
     private bool _disposed;
 
     public PriceBookCoordinator(PriceBookViewModel viewModel, PriceBookDataSource data,
-        IPriceBookInteraction interaction, PriceCsvFileService? files = null)
+        IPriceBookInteraction interaction, PriceCsvFileService? files = null, PriceBookWriteService? writer = null)
     {
         ViewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _data = data ?? throw new ArgumentNullException(nameof(data));
         _interaction = interaction ?? throw new ArgumentNullException(nameof(interaction));
         _files = files ?? new PriceCsvFileService();
+        _writer = writer;
         AddPriceCommand = new RelayCommand(() => Run(Add, "Could not prepare a price draft."), () => Ready && _ingredients.Count > 0 && _stores.Count > 0);
         EditPriceCommand = new RelayCommand(() => Run(Edit, "Could not prepare an edit draft."), () => Ready && ViewModel.SelectedPrice is not null);
         ExportCsvCommand = new RelayCommand(() => Run(Export, "Export failed. Check the visible prices and destination file."), () => Ready && ViewModel.VisiblePrices.Cast<object>().Any());
         ImportCsvCommand = new RelayCommand(() => Run(PreviewImport, "Could not preview this file. Check that it is a readable UTF-8 CSV."), () => Ready);
         ReloadCommand = new RelayCommand(() => Load(), () => !_disposed);
         ViewModel.ConnectActions(this);
+        ViewModel.SetSavingAvailable(writer is not null);
         ViewModel.PropertyChanged += OnViewModelChanged;
     }
 
@@ -40,6 +44,8 @@ public sealed class PriceBookCoordinator : IDisposable
     public RelayCommand ImportCsvCommand { get; }
     public RelayCommand ReloadCommand { get; }
     public Exception? LastError { get; private set; }
+    public bool? LastSaveSucceeded { get; private set; }
+    public event EventHandler? PriceSaved;
     private bool Ready => _loaded && !_disposed;
 
     public bool Load()
@@ -58,7 +64,7 @@ public sealed class PriceBookCoordinator : IDisposable
             _ingredients = ingredients; _stores = stores;
             ViewModel.SetStores(stores);
             _loaded = true;
-            ViewModel.SetMessage("Prices loaded. Add/Edit prepares drafts; saving is not connected.");
+            ViewModel.SetMessage(_writer is null ? "Prices loaded. Add/Edit prepares drafts; saving is not connected." : "Prices loaded. Manual changes save in UTC; CSV import remains preview only.");
         }, "Could not load prices. Any previously loaded rows are unchanged.");
     }
 
@@ -66,6 +72,7 @@ public sealed class PriceBookCoordinator : IDisposable
     {
         if (!Load()) return;
         var model = PriceEditDialogViewModel.ForAdd(_ingredients, _stores, CurrentKeys());
+        model.SaveOnConfirm = _writer is not null;
         ReceiveDraft(model, _interaction.ShowPriceDialog(model), null);
     }
 
@@ -77,11 +84,13 @@ public sealed class PriceBookCoordinator : IDisposable
         if (current is null) throw new InvalidDataException("The selected price is no longer available. Choose another row.");
         ViewModel.SelectedPrice = current;
         var model = PriceEditDialogViewModel.ForEdit(current, _ingredients, _stores);
+        model.SaveOnConfirm = _writer is not null;
         ReceiveDraft(model, _interaction.ShowPriceDialog(model), current);
     }
 
     private void ReceiveDraft(PriceEditDialogViewModel model, PriceEditDraft? draft, PriceBookRowViewModel? original)
     {
+        LastSaveSucceeded = null;
         if (draft is null) { ViewModel.SetMessage("Price dialog cancelled. No price was changed."); return; }
         var ingredient = _ingredients.SingleOrDefault(i => i.Id == draft.IngredientId);
         var store = _stores.SingleOrDefault(s => s.Id == draft.StoreId);
@@ -93,8 +102,33 @@ public sealed class PriceBookCoordinator : IDisposable
                 || (draft.Price == original.Price && draft.PackSize == original.PackSize)
                 || draft.OriginalSource != original.Source || draft.OriginalLastUpdated != original.LastUpdated)))
             throw new InvalidDataException("The dialog result does not match the current catalogue or selected price.");
-        ViewModel.RetainDraft(new PriceBookPendingDraft(draft, ingredient.Name, store.Name));
-        ViewModel.SetMessage("Draft prepared — not saved. It is retained below while this screen is open.");
+        var pending = new PriceBookPendingDraft(draft, ingredient.Name, store.Name);
+        ViewModel.RetainDraft(pending);
+        if (_writer is null)
+        {
+            ViewModel.SetMessage("Draft prepared — not saved. It is retained below while this screen is open.");
+            return;
+        }
+        try { _writer.Save(draft, original); LastSaveSucceeded = true; }
+        catch (Exception exception) when (exception is InvalidDataException or DbUpdateException or InvalidOperationException or System.Data.Common.DbException)
+        {
+            LastSaveSucceeded = false; LastError = exception;
+            ViewModel.SetMessage(exception is InvalidDataException ? exception.Message + " The draft is retained below, not saved."
+                : "Price save failed. The draft is retained below, not saved. Refresh and retry.", true);
+            return;
+        }
+        ViewModel.ReleaseDraft(pending);
+        if (Load())
+        {
+            ViewModel.SelectedPrice = ViewModel.Prices.FirstOrDefault(r => r.IngredientId == draft.IngredientId && r.StoreId == draft.StoreId && ViewModel.VisiblePrices.Contains(r));
+            ViewModel.SetMessage("Price saved. CSV import remains preview only.");
+        }
+        else ViewModel.SetMessage("Price saved, but the book could not reload. Refresh before continuing.", true);
+        try { PriceSaved?.Invoke(this, EventArgs.Empty); }
+        catch (Exception exception)
+        {
+            LastError = exception; ViewModel.SetMessage("Price saved, but a dependent screen could not refresh.", true);
+        }
     }
 
     private void Export()
@@ -162,6 +196,7 @@ public sealed class PriceBookCoordinator : IDisposable
         _disposed = true;
         ViewModel.PropertyChanged -= OnViewModelChanged;
         ViewModel.DisconnectActions(this);
+        ViewModel.SetSavingAvailable(false);
         RefreshCommands();
     }
 }

@@ -27,6 +27,7 @@ public sealed class PriceEditDialogViewModel : ViewModelBase
     private string _packSizeText = string.Empty;
     private bool _confirmAttempted;
     private PriceEditDraft? _result;
+    private bool _saveOnConfirm;
 
     private PriceEditDialogViewModel(
         PriceEditMode mode,
@@ -122,6 +123,12 @@ public sealed class PriceEditDialogViewModel : ViewModelBase
     public bool CanChangeRecord => !IsEditMode;
 
     public string Title => IsEditMode ? "Edit Price" : "Add Price";
+    public bool SaveOnConfirm
+    {
+        get => _saveOnConfirm;
+        set { if (SetProperty(ref _saveOnConfirm, value)) OnPropertyChanged(nameof(ConfirmLabel)); }
+    }
+    public string ConfirmLabel => SaveOnConfirm ? "Save Price" : "Confirm";
 
     public string Description => IsEditMode
         ? "Update the pack price or pack size. The ingredient and store identify this price and cannot be changed here."

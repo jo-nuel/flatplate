@@ -121,7 +121,8 @@
                         Content="E_xport CSV"
                         AutomationProperties.Name="Export visible CSV rows"
                         Command="{Binding Actions.ExportCsvCommand}"
-                        Padding="14,7">
+                        Padding="14,7"
+                        Margin="0,0,8,0">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource ConnectedButtonStyle}">
                             <Setter Property="IsEnabled" Value="True" />
@@ -134,6 +135,12 @@
                         </Style>
                     </Button.Style>
                 </Button>
+                <Button x:Name="ReloadPricesButton"
+                        Content="_Refresh"
+                        AutomationProperties.Name="Refresh Price Book"
+                        Command="{Binding Actions.ReloadCommand}"
+                        Style="{StaticResource ConnectedButtonStyle}"
+                        Padding="14,7" />
             </StackPanel>
         </Grid>
 
@@ -266,7 +273,7 @@
                 </Style>
             </Expander.Style>
             <StackPanel>
-                <TextBlock Text="Saving is not connected. Drafts remain in memory only while this screen is open."
+                <TextBlock Text="The drafts below are not saved. They remain in memory only while this screen is open."
                            TextWrapping="Wrap" Foreground="#4F5F4C" Margin="0,4,0,6" />
                 <DataGrid x:Name="PendingDraftsDataGrid" ItemsSource="{Binding PendingDrafts}" MaxHeight="125"
                           AutomationProperties.Name="Pending price drafts, not saved"

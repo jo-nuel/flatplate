@@ -21,6 +21,7 @@ public sealed class RecipeLibraryViewModel : ViewModelBase
     private RecipeCuisineOption _selectedCuisine = new("All cuisines", null);
     private IReadOnlyList<RecipeCuisineOption> _cuisineOptions;
     private RecipeLibraryCoordinator? _actions;
+    private bool _isSavingAvailable;
 
     public RecipeLibraryViewModel() : this(null) { }
 
@@ -61,8 +62,9 @@ public sealed class RecipeLibraryViewModel : ViewModelBase
     public bool HasPendingDrafts => _pendingDrafts.Count > 0;
     public string StatusMessage => _statusMessage;
     public bool IsError => _isError;
+    public bool IsSavingAvailable => _isSavingAvailable;
     public string EmptyTitle => _recipes.Count == 0 ? "No recipes yet" : "No recipes match";
-    public string EmptyDescription => _recipes.Count == 0 ? "Load a catalogue to browse recipes. New recipes can be prepared as unsaved drafts." : "Change the search or cuisine filter to see more recipes.";
+    public string EmptyDescription => _recipes.Count == 0 ? IsSavingAvailable ? "Add a recipe to start your library." : "Load a catalogue to browse recipes. New recipes can be prepared as unsaved drafts." : "Change the search or cuisine filter to see more recipes.";
 
     public void LoadRecipes(IEnumerable<Recipe> recipes)
     {
@@ -102,6 +104,11 @@ public sealed class RecipeLibraryViewModel : ViewModelBase
         if (ReferenceEquals(coordinator, _actions)) { _actions = null; OnPropertyChanged(nameof(Actions)); }
     }
     internal void RetainDraft(RecipeEditDraft draft) { _pendingDrafts.Add(draft); OnPropertyChanged(nameof(HasPendingDrafts)); }
+    internal void ReleaseDraft(RecipeEditDraft draft) { _pendingDrafts.Remove(draft); OnPropertyChanged(nameof(HasPendingDrafts)); }
+    internal void SetSavingAvailable(bool available)
+    {
+        _isSavingAvailable = available; OnPropertyChanged(nameof(IsSavingAvailable)); OnPropertyChanged(nameof(EmptyDescription));
+    }
     internal void SetStatus(string message, bool isError = false)
     {
         _statusMessage = message; _isError = isError;

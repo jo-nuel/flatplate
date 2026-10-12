@@ -23,6 +23,7 @@ public sealed class PriceBookViewModel : ViewModelBase
     private PriceBookCoordinator? _actions;
     private IReadOnlyList<string> _storeOptions = new[] { AllStoresOption, "Woolworths", "Coles" };
     private PriceCsvImportPreviewViewModel? _lastImportPreview;
+    private bool _isSavingAvailable;
 
     /// <summary>
     /// Creates an empty Price Book showing all stores.
@@ -45,10 +46,11 @@ public sealed class PriceBookViewModel : ViewModelBase
     public bool HasPendingDrafts => _pendingDrafts.Count > 0;
     public string OperationMessage => _operationMessage;
     public bool IsOperationError => _isOperationError;
+    public bool IsSavingAvailable => _isSavingAvailable;
     public PriceCsvImportPreviewViewModel? LastImportPreview => _lastImportPreview;
     public string EmptyTitle => _rows.Count == 0 ? "No prices yet" : "No prices for this store";
     public string EmptyDescription => _rows.Count == 0
-        ? "Prepare a draft or preview a CSV to review prices. Saving is not connected yet."
+        ? IsSavingAvailable ? "Add a price to start the book, or preview a CSV without saving it." : "Prepare a draft or preview a CSV to review prices. Saving is not connected yet."
         : "Choose another store or All stores to see available prices.";
 
     internal void ConnectActions(PriceBookCoordinator actions)
@@ -79,6 +81,19 @@ public sealed class PriceBookViewModel : ViewModelBase
     {
         _pendingDrafts.Add(draft);
         OnPropertyChanged(nameof(HasPendingDrafts));
+    }
+
+    internal void ReleaseDraft(PriceBookPendingDraft draft)
+    {
+        _pendingDrafts.Remove(draft);
+        OnPropertyChanged(nameof(HasPendingDrafts));
+    }
+
+    internal void SetSavingAvailable(bool available)
+    {
+        _isSavingAvailable = available;
+        OnPropertyChanged(nameof(IsSavingAvailable));
+        OnPropertyChanged(nameof(EmptyDescription));
     }
 
     internal void SetMessage(string message, bool isError = false)

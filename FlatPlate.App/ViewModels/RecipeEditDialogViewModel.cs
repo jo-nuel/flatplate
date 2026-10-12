@@ -11,6 +11,7 @@ public sealed class RecipeEditDialogViewModel : ViewModelBase
     private bool _confirmAttempted;
     private string _nameText = "", _cuisineText = "", _servingsText = "", _prepMinutesText = "0", _imagePathText = "";
     private RecipeIngredientEditLine? _selectedLine;
+    private bool _saveOnConfirm;
 
     private RecipeEditDialogViewModel(IReadOnlyList<Ingredient> ingredients, RecipeLibraryItem? original)
     {
@@ -55,8 +56,15 @@ public sealed class RecipeEditDialogViewModel : ViewModelBase
     public ObservableCollection<RecipeIngredientEditLine> Lines { get; } = new();
     public RecipeEditMode Mode => _original is null ? RecipeEditMode.Add : RecipeEditMode.Edit;
     public int? RecipeId => _original?.Id;
-    public string Title => Mode == RecipeEditMode.Add ? "Add Recipe Draft" : "Edit Recipe Draft";
-    public string Notice => "Amounts are totals for Base Servings. Confirm prepares an unsaved draft; Cancel leaves the recipe unchanged.";
+    public bool SaveOnConfirm
+    {
+        get => _saveOnConfirm;
+        set { if (SetProperty(ref _saveOnConfirm, value)) { OnPropertyChanged(nameof(Title)); OnPropertyChanged(nameof(Notice)); OnPropertyChanged(nameof(ConfirmLabel)); } }
+    }
+    public string Title => Mode == RecipeEditMode.Add ? SaveOnConfirm ? "Add Recipe" : "Add Recipe Draft" : SaveOnConfirm ? "Edit Recipe" : "Edit Recipe Draft";
+    public string ConfirmLabel => SaveOnConfirm ? "Save Recipe" : "Confirm Draft";
+    public string Notice => SaveOnConfirm ? "Amounts are totals for Base Servings. Save applies the valid recipe; Cancel leaves it unchanged."
+        : "Amounts are totals for Base Servings. Confirm prepares an unsaved draft; Cancel leaves the recipe unchanged.";
     public string NameText { get => _nameText; set { if (SetProperty(ref _nameText, value ?? "")) Changed(); } }
     public string CuisineText { get => _cuisineText; set { if (SetProperty(ref _cuisineText, value ?? "")) Changed(); } }
     public string ServingsText { get => _servingsText; set { if (SetProperty(ref _servingsText, value ?? "")) Changed(); } }

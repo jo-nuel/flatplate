@@ -160,7 +160,7 @@
                     HorizontalAlignment="Right"
                     Margin="0,20,0,0">
             <Button x:Name="ConfirmButton"
-                    Content="Confirm"
+                    Content="{Binding ConfirmLabel}"
                     Command="{Binding ConfirmCommand}"
                     IsDefault="True"
                     MinWidth="90"

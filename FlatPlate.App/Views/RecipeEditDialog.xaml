@@ -76,7 +76,7 @@
         </DataGrid>
         <TextBlock Grid.Row="6" x:Name="FormErrorText" Text="{Binding FormError}" Style="{StaticResource ErrorStyle}" Margin="0,8,0,0" />
         <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-            <Button x:Name="ConfirmRecipeButton" Content="Confirm Draft" Command="{Binding ConfirmCommand}" IsDefault="True" Padding="16,7" Margin="0,0,8,0" />
+            <Button x:Name="ConfirmRecipeButton" Content="{Binding ConfirmLabel}" Command="{Binding ConfirmCommand}" IsDefault="True" Padding="16,7" Margin="0,0,8,0" />
             <Button x:Name="CancelRecipeButton" Content="Cancel" IsCancel="True" Padding="16,7" />
         </StackPanel>
     </Grid>
