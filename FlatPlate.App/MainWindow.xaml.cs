@@ -16,14 +16,50 @@ namespace FlatPlate.App;
 public partial class MainWindow : Window
 {
     private readonly FlatPlateDbContext _context;
+    private readonly bool _ownsContext;
+    private PriceBookCoordinator? _priceCoordinator;
+    private RecipeLibraryCoordinator? _recipeCoordinator;
 
     /// <summary>
-    /// Creates the application database and connects the planner screen.
+    /// Creates the application database and connects the planner and Person B screens.
     /// </summary>
-    public MainWindow()
+    public MainWindow() : this(CreateDefaultContext(), ownsContext: true, initializeSeedData: true)
     {
-        InitializeComponent();
+    }
 
+    /// <summary>
+    /// Composes the real application using one supplied context. Tests use an explicitly
+    /// opened in-memory context; only the parameterless startup resolves the production path.
+    /// </summary>
+    public MainWindow(FlatPlateDbContext context, bool ownsContext = false, bool initializeSeedData = false,
+        IPriceBookInteraction? priceInteraction = null, IRecipeLibraryInteraction? recipeInteraction = null,
+        Func<DateTime>? utcSaveTime = null)
+    {
+        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _ownsContext = ownsContext;
+        try
+        {
+            InitializeComponent();
+            if (initializeSeedData)
+            {
+                _context.Database.EnsureCreated();
+                IngredientSeedData.AddMissingIngredients(_context);
+                RecipeSeedData.AddMissingRecipes(_context);
+                StoreSeedData.AddMissingStores(_context);
+                PriceSeedData.AddMissingPrices(_context);
+            }
+            Compose(priceInteraction, recipeInteraction, utcSaveTime ?? (() => DateTime.UtcNow));
+        }
+        catch
+        {
+            _priceCoordinator?.Dispose(); _recipeCoordinator?.Dispose();
+            if (_ownsContext) _context.Dispose();
+            throw;
+        }
+    }
+
+    private static FlatPlateDbContext CreateDefaultContext()
+    {
         var databaseDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "FlatPlate");
@@ -34,12 +70,11 @@ public partial class MainWindow : Window
             .UseSqlite($"Data Source={databasePath}")
             .Options;
 
-        _context = new FlatPlateDbContext(databaseOptions);
-        _context.Database.EnsureCreated();
-        IngredientSeedData.AddMissingIngredients(_context);
-        RecipeSeedData.AddMissingRecipes(_context);
-        StoreSeedData.AddMissingStores(_context);
+        return new FlatPlateDbContext(databaseOptions);
+    }
 
+    private void Compose(IPriceBookInteraction? priceInteraction, IRecipeLibraryInteraction? recipeInteraction, Func<DateTime> utcSaveTime)
+    {
         var planRepository = new Repository<PlannedMeal>(_context);
         var planService = new WeeklyPlanService(planRepository);
         var ingredientMerger = new IngredientMerger();
@@ -61,6 +96,24 @@ public partial class MainWindow : Window
             new DialogService(),
             recipes,
             stores);
+
+        var priceReader = new PriceBookReadService(_context);
+        _priceCoordinator = new PriceBookCoordinator(new PriceBookViewModel(),
+            new PriceBookDataSource(priceReader,
+                () => _context.Ingredients.AsNoTracking().OrderBy(i => i.Name).ToList(),
+                () => _context.Stores.AsNoTracking().OrderBy(s => s.Name).ToList()),
+            priceInteraction ?? new PriceBookInteraction(() => this),
+            writer: new PriceBookWriteService(_context, utcSaveTime));
+        PriceBook.Connect(_priceCoordinator);
+
+        var recipeReader = new RecipeLibraryReadService(_context);
+        var imageReader = new RecipeImageService(AppContext.BaseDirectory);
+        _recipeCoordinator = new RecipeLibraryCoordinator(new RecipeLibraryViewModel(imageReader.Load),
+            new RecipeLibraryDataSource(recipeReader,
+                () => _context.Ingredients.AsNoTracking().OrderBy(i => i.Name).ToList()),
+            recipeInteraction ?? new RecipeLibraryInteraction(() => this),
+            writer: new RecipeLibraryWriteService(_context));
+        RecipeLibrary.Connect(_recipeCoordinator);
     }
 
     /// <summary>
@@ -68,7 +121,9 @@ public partial class MainWindow : Window
     /// </summary>
     protected override void OnClosed(EventArgs eventArgs)
     {
-        _context.Dispose();
+        _priceCoordinator?.Dispose();
+        _recipeCoordinator?.Dispose();
+        if (_ownsContext) _context.Dispose();
         base.OnClosed(eventArgs);
     }
 }

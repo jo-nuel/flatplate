@@ -1,0 +1,176 @@
+<Window x:Class="FlatPlate.App.Views.PriceEditDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}"
+        Width="460"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="#F3F8F2">
+    <Window.Resources>
+        <Style x:Key="FieldLabelStyle" TargetType="Label">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!-- collapses while there is no message so valid fields take no extra space -->
+        <Style x:Key="ErrorTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#B3261E" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,4,0,0" />
+            <Style.Triggers>
+                <Trigger Property="Text" Value="">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="FieldStackStyle" TargetType="StackPanel">
+            <Setter Property="Margin" Value="0,0,0,14" />
+        </Style>
+
+        <!-- without this, screen readers announce options by their .NET type name -->
+        <Style x:Key="NamedOptionStyle" TargetType="ComboBoxItem">
+            <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+        </Style>
+    </Window.Resources>
+
+    <StackPanel Margin="24">
+        <TextBlock Text="{Binding Title}"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Margin="0,0,0,4" />
+
+        <TextBlock Text="{Binding Description}"
+                   Foreground="#4F5F4C"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,16" />
+
+        <Border Background="White"
+                BorderBrush="#D5E3D1"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="16,16,16,2">
+            <StackPanel>
+                <!-- ingredient and store are locked in Edit because they identify the price -->
+                <StackPanel Style="{StaticResource FieldStackStyle}">
+                    <Label x:Name="IngredientLabel"
+                           Content="_Ingredient"
+                           Target="{Binding ElementName=IngredientComboBox}"
+                           Style="{StaticResource FieldLabelStyle}" />
+                    <ComboBox x:Name="IngredientComboBox"
+                              AutomationProperties.LabeledBy="{Binding ElementName=IngredientLabel}"
+                              ItemsSource="{Binding IngredientOptions}"
+                              DisplayMemberPath="Name"
+                              ItemContainerStyle="{StaticResource NamedOptionStyle}"
+                              SelectedItem="{Binding SelectedIngredient}"
+                              IsEnabled="{Binding CanChangeRecord}"
+                              Padding="8,5" />
+                    <TextBlock x:Name="IngredientErrorText"
+                               Text="{Binding IngredientError}"
+                               Style="{StaticResource ErrorTextStyle}" />
+                </StackPanel>
+
+                <StackPanel Style="{StaticResource FieldStackStyle}">
+                    <Label x:Name="StoreLabel"
+                           Content="_Store"
+                           Target="{Binding ElementName=StoreComboBox}"
+                           Style="{StaticResource FieldLabelStyle}" />
+                    <ComboBox x:Name="StoreComboBox"
+                              AutomationProperties.LabeledBy="{Binding ElementName=StoreLabel}"
+                              ItemsSource="{Binding StoreOptions}"
+                              DisplayMemberPath="Name"
+                              ItemContainerStyle="{StaticResource NamedOptionStyle}"
+                              SelectedItem="{Binding SelectedStore}"
+                              IsEnabled="{Binding CanChangeRecord}"
+                              Padding="8,5" />
+                    <TextBlock x:Name="StoreErrorText"
+                               Text="{Binding StoreError}"
+                               Style="{StaticResource ErrorTextStyle}" />
+                </StackPanel>
+
+                <StackPanel Style="{StaticResource FieldStackStyle}">
+                    <Label x:Name="PriceLabel"
+                           Content="Package _price (AUD)"
+                           Target="{Binding ElementName=PriceTextBox}"
+                           Style="{StaticResource FieldLabelStyle}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="64" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="PriceTextBox"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=PriceLabel}"
+                                 Text="{Binding PriceText, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="6,5" />
+                        <TextBlock Grid.Column="1"
+                                   Text="AUD"
+                                   Foreground="#4F5F4C"
+                                   VerticalAlignment="Center"
+                                   Margin="10,0,0,0" />
+                    </Grid>
+                    <TextBlock x:Name="PriceErrorText"
+                               Text="{Binding PriceError}"
+                               Style="{StaticResource ErrorTextStyle}" />
+                </StackPanel>
+
+                <!-- the unit follows the selected ingredient's type and cannot be typed -->
+                <StackPanel Style="{StaticResource FieldStackStyle}">
+                    <Label x:Name="PackSizeLabel"
+                           Content="Pack si_ze in base units"
+                           Target="{Binding ElementName=PackSizeTextBox}"
+                           Style="{StaticResource FieldLabelStyle}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="64" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="PackSizeTextBox"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=PackSizeLabel}"
+                                 Text="{Binding PackSizeText, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="6,5" />
+                        <TextBlock x:Name="BaseUnitText"
+                                   Grid.Column="1"
+                                   Text="{Binding BaseUnitDisplay}"
+                                   Foreground="#4F5F4C"
+                                   VerticalAlignment="Center"
+                                   Margin="10,0,0,0" />
+                    </Grid>
+                    <TextBlock x:Name="PackSizeErrorText"
+                               Text="{Binding PackSizeError}"
+                               Style="{StaticResource ErrorTextStyle}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <TextBlock x:Name="ProvenanceText"
+                   Text="{Binding ProvenanceNote}"
+                   Foreground="#4F5F4C"
+                   TextWrapping="Wrap"
+                   Margin="0,12,0,0" />
+
+        <TextBlock x:Name="FormErrorText"
+                   Text="{Binding FormError}"
+                   Style="{StaticResource ErrorTextStyle}"
+                   Margin="0,8,0,0" />
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,20,0,0">
+            <Button x:Name="ConfirmButton"
+                    Content="{Binding ConfirmLabel}"
+                    Command="{Binding ConfirmCommand}"
+                    IsDefault="True"
+                    MinWidth="90"
+                    Padding="14,7"
+                    Margin="0,0,8,0" />
+            <Button x:Name="CancelButton"
+                    Content="Cancel"
+                    IsCancel="True"
+                    MinWidth="90"
+                    Padding="14,7" />
+        </StackPanel>
+    </StackPanel>
+</Window>
