@@ -13,22 +13,84 @@ using System.Windows;
 namespace FlatPlate.App;
 
 /// <summary>
-/// Provides the shared five-screen shell for the FlatPlate application.
+/// Composes the authenticated application shell and its feature screens.
 /// </summary>
 public partial class MainWindow : Window
 {
     private readonly FlatPlateDbContext _context;
-    private readonly HttpClient _httpClient;
-    private readonly AuthenticationSession _session;
-    private readonly MainWindowViewModel _mainViewModel;
+    private readonly bool _ownsContext;
+    private HttpClient? _httpClient;
+    private AuthenticationSession? _session;
+    private MainWindowViewModel? _mainViewModel;
+    private PriceBookCoordinator? _priceCoordinator;
+    private RecipeLibraryCoordinator? _recipeCoordinator;
 
     /// <summary>
-    /// Creates the application database and connects the planner screen.
+    /// Creates the production application with its local SQLite database.
     /// </summary>
     public MainWindow()
+        : this(CreateDefaultContext(), ownsContext: true, initializeSeedData: true)
     {
-        InitializeComponent();
+    }
 
+    /// <summary>
+    /// Composes the application using a supplied context so tests can use an
+    /// explicitly opened in-memory database.
+    /// </summary>
+    public MainWindow(
+        FlatPlateDbContext context,
+        bool ownsContext = false,
+        bool initializeSeedData = false,
+        IPriceBookInteraction? priceInteraction = null,
+        IRecipeLibraryInteraction? recipeInteraction = null,
+        Func<DateTime>? utcSaveTime = null)
+    {
+        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _ownsContext = ownsContext;
+
+        try
+        {
+            InitializeComponent();
+            ComposeAuthentication();
+
+            if (initializeSeedData)
+            {
+                _context.Database.EnsureCreated();
+                IngredientSeedData.AddMissingIngredients(_context);
+                RecipeSeedData.AddMissingRecipes(_context);
+                StoreSeedData.AddMissingStores(_context);
+                PriceSeedData.AddMissingPrices(_context);
+            }
+
+            ComposeFeatures(
+                priceInteraction,
+                recipeInteraction,
+                utcSaveTime ?? (() => DateTime.UtcNow));
+        }
+        catch
+        {
+            DisposeResources();
+            throw;
+        }
+    }
+
+    private static FlatPlateDbContext CreateDefaultContext()
+    {
+        var databaseDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "FlatPlate");
+        Directory.CreateDirectory(databaseDirectory);
+
+        var databasePath = Path.Combine(databaseDirectory, "flatplate.db");
+        var databaseOptions = new DbContextOptionsBuilder<FlatPlateDbContext>()
+            .UseSqlite($"Data Source={databasePath}")
+            .Options;
+
+        return new FlatPlateDbContext(databaseOptions);
+    }
+
+    private void ComposeAuthentication()
+    {
         _session = new AuthenticationSession(TimeProvider.System);
         _httpClient = new HttpClient
         {
@@ -41,24 +103,13 @@ public partial class MainWindow : Window
             _session);
         _mainViewModel = new MainWindowViewModel(_session);
         DataContext = _mainViewModel;
+    }
 
-        var databaseDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FlatPlate");
-        Directory.CreateDirectory(databaseDirectory);
-
-        var databasePath = Path.Combine(databaseDirectory, "flatplate.db");
-        var databaseOptions = new DbContextOptionsBuilder<FlatPlateDbContext>()
-            .UseSqlite($"Data Source={databasePath}")
-            .Options;
-
-        _context = new FlatPlateDbContext(databaseOptions);
-        _context.Database.EnsureCreated();
-        IngredientSeedData.AddMissingIngredients(_context);
-        RecipeSeedData.AddMissingRecipes(_context);
-        StoreSeedData.AddMissingStores(_context);
-        PriceSeedData.AddMissingPrices(_context);
-
+    private void ComposeFeatures(
+        IPriceBookInteraction? priceInteraction,
+        IRecipeLibraryInteraction? recipeInteraction,
+        Func<DateTime> utcSaveTime)
+    {
         var planRepository = new Repository<PlannedMeal>(_context);
         var planService = new WeeklyPlanService(planRepository);
         var ingredientMerger = new IngredientMerger();
@@ -80,18 +131,60 @@ public partial class MainWindow : Window
             new DialogService(),
             recipes,
             stores);
+
+        var priceReader = new PriceBookReadService(_context);
+        _priceCoordinator = new PriceBookCoordinator(
+            new PriceBookViewModel(),
+            new PriceBookDataSource(
+                priceReader,
+                () => _context.Ingredients
+                    .AsNoTracking()
+                    .OrderBy(ingredient => ingredient.Name)
+                    .ToList(),
+                () => _context.Stores
+                    .AsNoTracking()
+                    .OrderBy(store => store.Name)
+                    .ToList()),
+            priceInteraction ?? new PriceBookInteraction(() => this),
+            writer: new PriceBookWriteService(_context, utcSaveTime));
+        PriceBook.Connect(_priceCoordinator);
+
+        var recipeReader = new RecipeLibraryReadService(_context);
+        var imageReader = new RecipeImageService(AppContext.BaseDirectory);
+        _recipeCoordinator = new RecipeLibraryCoordinator(
+            new RecipeLibraryViewModel(imageReader.Load),
+            new RecipeLibraryDataSource(
+                recipeReader,
+                () => _context.Ingredients
+                    .AsNoTracking()
+                    .OrderBy(ingredient => ingredient.Name)
+                    .ToList()),
+            recipeInteraction ?? new RecipeLibraryInteraction(() => this),
+            writer: new RecipeLibraryWriteService(_context));
+        RecipeLibrary.Connect(_recipeCoordinator);
     }
 
     /// <summary>
-    /// Releases the application database when the main window closes.
+    /// Releases application services and the owned database context.
     /// </summary>
     protected override void OnClosed(EventArgs eventArgs)
     {
-        _mainViewModel.Dispose();
-        _session.Dispose();
-        _httpClient.Dispose();
-        _context.Dispose();
+        DisposeResources();
         base.OnClosed(eventArgs);
+    }
+
+    private void DisposeResources()
+    {
+        _priceCoordinator?.Dispose();
+        _recipeCoordinator?.Dispose();
+        _mainViewModel?.Dispose();
+        _session?.Dispose();
+        _httpClient?.Dispose();
+
+        if (_ownsContext)
+        {
+            _context.Dispose();
+        }
     }
 
     private static Uri ResolveApiBaseAddress()

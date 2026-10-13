@@ -77,10 +77,10 @@
                     <views:HomeView />
                 </TabItem>
                 <TabItem Header="Recipe Library">
-                    <views:RecipeLibraryView />
+                    <views:RecipeLibraryView x:Name="RecipeLibrary" />
                 </TabItem>
                 <TabItem Header="Price Book">
-                    <views:PriceBookView />
+                    <views:PriceBookView x:Name="PriceBook" />
                 </TabItem>
                 <TabItem Header="Weekly Planner">
                     <views:WeeklyPlannerView x:Name="WeeklyPlanner" />
