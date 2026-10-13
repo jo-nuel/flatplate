@@ -1,7 +1,65 @@
 ﻿<Application x:Class="FlatPlate.App.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:FlatPlate.App"
+             xmlns:converters="clr-namespace:FlatPlate.App.Converters"
              StartupUri="MainWindow.xaml">
-    <Application.Resources />
+    <Application.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+
+        <Style x:Key="PrimaryButton"
+               TargetType="Button">
+            <Setter Property="MinHeight"
+                    Value="42" />
+            <Setter Property="Padding"
+                    Value="18,8" />
+            <Setter Property="Background"
+                    Value="#2F7D57" />
+            <Setter Property="Foreground"
+                    Value="White" />
+            <Setter Property="BorderThickness"
+                    Value="0" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+        </Style>
+
+        <Style x:Key="SecondaryButton"
+               TargetType="Button"
+               BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background"
+                    Value="#E8F2EC" />
+            <Setter Property="Foreground"
+                    Value="#225E41" />
+        </Style>
+
+        <Style x:Key="FormTextBox"
+               TargetType="TextBox">
+            <Setter Property="MinHeight"
+                    Value="40" />
+            <Setter Property="Padding"
+                    Value="10,7" />
+            <Setter Property="BorderBrush"
+                    Value="#C9D4CD" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+        </Style>
+
+        <Style x:Key="FormPasswordBox"
+               TargetType="PasswordBox">
+            <Setter Property="MinHeight"
+                    Value="40" />
+            <Setter Property="Padding"
+                    Value="10,7" />
+            <Setter Property="BorderBrush"
+                    Value="#C9D4CD" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+        </Style>
+    </Application.Resources>
 </Application>

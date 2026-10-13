@@ -1,4 +1,4 @@
-﻿<Window x:Class="FlatPlate.App.MainWindow"
+<Window x:Class="FlatPlate.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,26 +6,92 @@
         xmlns:views="clr-namespace:FlatPlate.App.Views"
         mc:Ignorable="d"
         Title="FlatPlate"
-        Height="720"
-        Width="1180"
-        MinHeight="520"
-        MinWidth="820"
+        Height="760"
+        Width="1220"
+        MinHeight="600"
+        MinWidth="900"
+        Background="#F3F6FA"
         WindowStartupLocation="CenterScreen">
-    <TabControl>
-        <TabItem Header="Recipe Library">
-            <views:RecipeLibraryView />
-        </TabItem>
-        <TabItem Header="Price Book">
-            <views:PriceBookView />
-        </TabItem>
-        <TabItem Header="Weekly Planner">
-            <views:WeeklyPlannerView x:Name="WeeklyPlanner" />
-        </TabItem>
-        <TabItem Header="Shopping List">
-            <views:ShoppingListView />
-        </TabItem>
-        <TabItem Header="Insights">
-            <views:InsightsView />
-        </TabItem>
-    </TabControl>
+    <Grid>
+        <views:AuthenticationView x:Name="AuthenticationView"
+                                  Visibility="{Binding IsSignedOut,
+                                                       Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+        <Grid Visibility="{Binding IsAuthenticated,
+                                   Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="72" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Padding="24,0"
+                    Background="#173D2B">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                        <Border Width="38"
+                                Height="38"
+                                Margin="0,0,12,0"
+                                Background="#D9F0E2"
+                                CornerRadius="19">
+                            <TextBlock HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontSize="20"
+                                       Text="F" />
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Foreground="White"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Text="FlatPlate" />
+                            <TextBlock Foreground="#BFD8CA"
+                                       FontSize="12"
+                                       Text="Plan well. Shop smart. Waste less." />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                        <TextBlock Margin="0,0,16,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="White"
+                                   Text="{Binding DisplayName}" />
+                        <Button MinWidth="92"
+                                Style="{StaticResource SecondaryButton}"
+                                Command="{Binding SignOutCommand}"
+                                Content="Sign out" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <TabControl Grid.Row="1"
+                        Background="#F3F6FA"
+                        BorderThickness="0">
+                <TabItem Header="Home">
+                    <views:HomeView />
+                </TabItem>
+                <TabItem Header="Recipe Library">
+                    <views:RecipeLibraryView />
+                </TabItem>
+                <TabItem Header="Price Book">
+                    <views:PriceBookView />
+                </TabItem>
+                <TabItem Header="Weekly Planner">
+                    <views:WeeklyPlannerView x:Name="WeeklyPlanner" />
+                </TabItem>
+                <TabItem Header="Shopping List">
+                    <views:ShoppingListView />
+                </TabItem>
+                <TabItem Header="Insights">
+                    <views:InsightsView />
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Grid>
 </Window>
