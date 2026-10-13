@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "DatabaseProvider": "Sqlite",
+    "Database__Initialize": "true",
+    "ConnectionStrings__FlatPlate": "Data Source=flatplate-auth-local.db",
+    "Authentication__OneTimeCodeKey": "local-only-code-key-change-before-deployment",
+    "Authentication__JwtSigningKey": "local-only-jwt-key-change-before-deployment",
+    "Authentication__JwtIssuer": "FlatPlate.Api.Local",
+    "Authentication__JwtAudience": "FlatPlate.App.Local",
+    "Email__Provider": "Deferred"
+  }
+}

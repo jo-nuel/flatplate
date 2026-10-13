@@ -89,7 +89,16 @@ else
 
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
-builder.Build().Run();
+var host = builder.Build();
+
+if (builder.Configuration.GetValue<bool>("Database:Initialize"))
+{
+    using var scope = host.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
+    AuthenticationDatabaseInitializer.Initialize(context);
+}
+
+host.Run();
 
 static string RequiredSetting(IConfiguration configuration, string key) =>
     configuration[key]

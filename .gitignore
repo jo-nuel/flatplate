@@ -484,5 +484,11 @@ $RECYCLE.BIN/
 # Local PDF review files created while reading the assignment specification.
 tmp/
 
+# Local-only application configuration and SQLite files.
+**/local.*.json
+*.db
+*.db-shm
+*.db-wal
+
 # Local Codex task records and workspace state.
 .codex/

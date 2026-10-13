@@ -57,6 +57,26 @@ public sealed class AuthenticationDbContextTests
         Assert.That(context.UserAccounts.Count(), Is.EqualTo(2));
     }
 
+    /// <summary>
+    /// Confirms local initialization creates the SQLite authentication schema.
+    /// </summary>
+    [Test]
+    public void Initialize_EmptySqliteDatabase_CreatesAuthenticationSchema()
+    {
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        connection.Open();
+
+        var options = new DbContextOptionsBuilder<AuthenticationDbContext>()
+            .UseSqlite(connection)
+            .Options;
+
+        using var context = new AuthenticationDbContext(options);
+        AuthenticationDatabaseInitializer.Initialize(context);
+
+        Assert.That(context.Database.CanConnect(), Is.True);
+        Assert.That(context.UserAccounts.Count(), Is.Zero);
+    }
+
     private static UserAccount CreateAccount(string email)
     {
         var now = new DateTimeOffset(2026, 10, 11, 12, 0, 0, TimeSpan.Zero);
