@@ -1,0 +1,51 @@
+<Window x:Class="FlatPlate.App.Views.HistoricalPriceImportPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Historical Price Import Preview" Width="1140" Height="760" MinWidth="780" MinHeight="540"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="#F3F8F2">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="Import Historical Prices" FontSize="24" FontWeight="Bold" />
+        <TextBlock Grid.Row="1" Margin="0,8,0,8" TextWrapping="Wrap" Foreground="#4F5F4C"
+                   Text="Historical reference prices from 17 September 2026. Stock shown is from that snapshot, not current availability. Existing prices will not be replaced." />
+        <StackPanel Grid.Row="2" Margin="0,0,0,8">
+            <TextBlock Text="{Binding Package.Files.CsvPath, StringFormat='Price CSV: {0}'}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Package.Files.EvidencePath, StringFormat='Original evidence: {0}'}" TextWrapping="Wrap" />
+        </StackPanel>
+        <TextBlock Grid.Row="3" Text="{Binding Summary}" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,0,0,8" />
+        <DataGrid Grid.Row="4" x:Name="HistoricalRowsGrid" ItemsSource="{Binding Rows}"
+                  AutomationProperties.Name="Historical prices and evidence validation"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Ingredient" Binding="{Binding Record.IngredientName}" Width="*" MinWidth="130" />
+                <DataGridTextColumn Header="Store" Binding="{Binding Record.StoreName}" Width="95" />
+                <DataGridTextColumn Header="SKU" Binding="{Binding Record.ProductId}" Width="75" />
+                <DataGridTextColumn Header="Price AUD" Binding="{Binding Record.PriceAUD}" Width="80" />
+                <DataGridTextColumn Header="Pack" Binding="{Binding Record.PackSizeBase}" Width="60" />
+                <DataGridTextColumn Header="Unit" Binding="{Binding Record.BaseUnit}" Width="45" />
+                <DataGridTextColumn Header="Observed" Binding="{Binding Record.ObservedDate, StringFormat=yyyy-MM-dd}" Width="95" />
+                <DataGridCheckBoxColumn Header="In stock then" Binding="{Binding Record.InStockAtObservation, Mode=OneWay}" Width="85" />
+                <DataGridTextColumn Header="Validation" Binding="{Binding ReviewStatus}" Width="190" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <TextBlock Grid.Row="5" x:Name="HistoricalIssueText" Text="{Binding Issue}" TextWrapping="Wrap"
+                   Foreground="#A32020" Margin="0,10,0,0" AutomationProperties.LiveSetting="Polite" />
+        <CheckBox Grid.Row="6" x:Name="HistoricalAcknowledgement" IsChecked="{Binding Acknowledged}"
+                  Margin="0,12,0,0" AutomationProperties.Name="Confirm reviewed historical batch">
+            <TextBlock Text="I have reviewed this batch and confirm importing all 40 historical reference prices dated 17 September 2026, including the Coles oil marked out of stock then. Existing prices will not be replaced."
+                       TextWrapping="Wrap" />
+        </CheckBox>
+        <TextBlock Grid.Row="7" x:Name="HistoricalStatusText" Text="{Binding Status}" TextWrapping="Wrap"
+                   Margin="0,10,0,0" AutomationProperties.LiveSetting="Polite" />
+        <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button x:Name="ConfirmHistoricalImportButton" Content="_Confirm Import" Command="{Binding ConfirmImportCommand}"
+                    AutomationProperties.Name="Confirm historical price import" Padding="16,7" Margin="0,0,8,0" />
+            <Button x:Name="CancelHistoricalImportButton" Content="_Cancel / Close" Command="{Binding CancelCommand}"
+                    IsCancel="True" IsDefault="True" Padding="16,7" />
+        </StackPanel>
+    </Grid>
+</Window>

@@ -33,6 +33,9 @@ public sealed class PriceBookCoordinator : IDisposable
         EditPriceCommand = new RelayCommand(() => Run(Edit, "Could not prepare an edit draft."), () => Ready && ViewModel.SelectedPrice is not null);
         ExportCsvCommand = new RelayCommand(() => Run(Export, "Export failed. Check the visible prices and destination file."), () => Ready && ViewModel.VisiblePrices.Cast<object>().Any());
         ImportCsvCommand = new RelayCommand(() => Run(PreviewImport, "Could not preview this file. Check that it is a readable UTF-8 CSV."), () => Ready);
+        ImportHistoricalPricesCommand = new RelayCommand(() => Run(PreviewHistoricalImport,
+            "Could not read the historical CSV or evidence. Check the files and try again."),
+            () => Ready && _writer is not null && _interaction is IHistoricalPriceBookInteraction);
         ReloadCommand = new RelayCommand(() => Load(), () => !_disposed);
         ViewModel.ConnectActions(this);
         ViewModel.SetSavingAvailable(writer is not null);
@@ -44,6 +47,8 @@ public sealed class PriceBookCoordinator : IDisposable
     public RelayCommand EditPriceCommand { get; }
     public RelayCommand ExportCsvCommand { get; }
     public RelayCommand ImportCsvCommand { get; }
+    public RelayCommand ImportHistoricalPricesCommand { get; }
+    public HistoricalPriceImportPreviewViewModel? LastHistoricalPreview { get; private set; }
     public RelayCommand ReloadCommand { get; }
     public Exception? LastError { get; private set; }
     public bool? LastSaveSucceeded { get; private set; }
@@ -171,7 +176,12 @@ public sealed class PriceBookCoordinator : IDisposable
         if (!Load()) return;
         var parsed = Csv().Parse(_files.Read(path));
         var preview = new PriceCsvImportPreviewViewModel(parsed, _ingredients, _stores, CurrentKeys(), forImport: _importer is not null);
-        if (_importer is not null) preview.ConnectImport(() => PersistImport(parsed));
+        if (_importer is not null) preview.ConnectImport(() => PersistImport(parsed), count =>
+        {
+            if (Load()) ViewModel.SetMessage($"Imported {count} price records. Existing prices were unchanged. The current store filter is preserved.");
+            else ViewModel.SetMessage($"Imported {count} price records, but the book could not reload. The records are saved; refresh before continuing.", true);
+            NotifyPriceSaved();
+        });
         ViewModel.SetPreview(preview);
         ViewModel.SetMessage(_importer is null ? $"Preview only: {preview.Rows.Count} parsed records, {preview.Issues.Count} issues. Nothing was saved."
             : $"{preview.Rows.Count} parsed records, {preview.Issues.Count} issues. Nothing is saved until Confirm Import.");
@@ -194,10 +204,41 @@ public sealed class PriceBookCoordinator : IDisposable
             ViewModel.SetMessage("Import failed. No records were saved. Review the preview problems and select the CSV again.", true);
             throw;
         }
-        if (Load()) ViewModel.SetMessage($"Imported {count} price records. Existing prices were unchanged. The current store filter is preserved.");
-        else ViewModel.SetMessage($"Imported {count} price records, but the book could not reload. The records are saved; refresh before continuing.", true);
-        NotifyPriceSaved();
         return count;
+    }
+
+    private void PreviewHistoricalImport()
+    {
+        if (_disposed || _writer is null || _interaction is not IHistoricalPriceBookInteraction interaction) return;
+        LastHistoricalPreview = null;
+        var selection = interaction.ChooseHistoricalImportFiles();
+        if (selection is null) { ViewModel.SetMessage("Historical import cancelled. Nothing was saved."); return; }
+        if (!Load()) return;
+        var files = new HistoricalPriceImportFiles();
+        var package = files.Read(selection, _ingredients.Select(i => i.Name), _stores.Select(s => s.Name));
+        var rows = new HistoricalPriceMatchService(_writer.Context, package.Evidence).Review(package.Records);
+        string? issue = null;
+        try { rows = new HistoricalPriceBatchValidator(_writer.Context, package.Evidence).Validate(package.Records); }
+        catch (InvalidDataException error) { issue = error.Message; }
+        var preview = new HistoricalPriceImportPreviewViewModel(package, rows, issue);
+        LastHistoricalPreview = preview;
+        preview.ConnectImport(() =>
+        {
+            if (_disposed || _writer is null) throw new InvalidOperationException("Saving is no longer connected.");
+            files.RequireUnchanged(package);
+            var fresh = files.Read(selection, _ingredients.Select(i => i.Name), _stores.Select(s => s.Name));
+            files.RequireUnchanged(package);
+            return new HistoricalPriceImportService(_writer.Context).Import(selection.EvidencePath, fresh.Records, preview.Acknowledged);
+        }, count =>
+        {
+            if (Load()) ViewModel.SetMessage($"Imported {count} historical prices. Existing prices and the store filter were preserved.");
+            else ViewModel.SetMessage($"Imported {count} historical prices, but the book could not refresh. The records are saved.", true);
+            NotifyPriceSaved();
+        });
+        try { interaction.ShowHistoricalImportPreview(preview); }
+        finally { preview.Close(); }
+        if (preview.LastError is not null) { LastError = preview.LastError; ViewModel.SetMessage(preview.Status + " " + preview.Issue, true); }
+        else if (!preview.HasImported) ViewModel.SetMessage(issue is null ? "Historical preview cancelled. Nothing was saved." : "Historical import blocked: " + issue, issue is not null);
     }
 
     private PriceCsvService Csv() => new(_ingredients.Select(i => i.Name), _stores.Select(s => s.Name));
@@ -221,6 +262,7 @@ public sealed class PriceBookCoordinator : IDisposable
     {
         AddPriceCommand.RaiseCanExecuteChanged(); EditPriceCommand.RaiseCanExecuteChanged();
         ExportCsvCommand.RaiseCanExecuteChanged(); ImportCsvCommand.RaiseCanExecuteChanged(); ReloadCommand.RaiseCanExecuteChanged();
+        ImportHistoricalPricesCommand.RaiseCanExecuteChanged();
     }
 
     public void Dispose()
