@@ -74,6 +74,31 @@
                         Grid.Row="1"
                         Background="{StaticResource FlatPlateCanvasBrush}"
                         BorderThickness="0">
+                <TabControl.Template>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid KeyboardNavigation.TabNavigation="Local">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Border Background="White"
+                                    BorderBrush="{StaticResource FlatPlateBorderBrush}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="16,4">
+                                <TabPanel IsItemsHost="True"
+                                          KeyboardNavigation.TabIndex="1" />
+                            </Border>
+                            <Border Grid.Row="1"
+                                    Background="{TemplateBinding Background}"
+                                    KeyboardNavigation.TabNavigation="Local">
+                                <ContentPresenter x:Name="PART_SelectedContentHost"
+                                                  ContentSource="SelectedContent"
+                                                  HorizontalAlignment="Stretch"
+                                                  VerticalAlignment="Stretch" />
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </TabControl.Template>
                 <TabControl.Resources>
                     <Style TargetType="TabItem">
                         <Setter Property="Margin"
@@ -90,10 +115,13 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="TabItem">
                                     <Border x:Name="TabSurface"
+                                            MinHeight="40"
                                             Padding="{TemplateBinding Padding}"
                                             Background="Transparent"
                                             CornerRadius="8">
                                         <ContentPresenter ContentSource="Header"
+                                                          RecognizesAccessKey="True"
+                                                          VerticalAlignment="Center"
                                                           HorizontalAlignment="Center" />
                                     </Border>
                                     <ControlTemplate.Triggers>
