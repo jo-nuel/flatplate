@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using FlatPlate.Core.Contracts.Authentication;
 using FlatPlate.Server.Authentication;
@@ -31,6 +32,35 @@ public sealed class AuthenticationFunctions(IAuthenticationService authenticatio
             request,
             authenticationService.VerifyEmailAsync,
             cancellationToken);
+
+    [Function("VerifyEmailLink")]
+    public async Task<IActionResult> VerifyEmailLinkAsync(
+        [HttpTrigger(
+            AuthorizationLevel.Anonymous,
+            "get",
+            Route = "auth/verify-email-link")]
+        HttpRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await authenticationService.VerifyEmailAsync(
+            new VerifyEmailRequest(
+                request.Query["email"].ToString(),
+                request.Query["token"].ToString()),
+            cancellationToken);
+
+        var message = result.IsSuccess
+            ? result.Value!.Message
+            : result.Message ?? "This verification link is invalid or has expired.";
+
+        return new ContentResult
+        {
+            Content = BuildVerificationPage(result.IsSuccess, message),
+            ContentType = "text/html; charset=utf-8",
+            StatusCode = result.IsSuccess
+                ? StatusCodes.Status200OK
+                : StatusCodes.Status400BadRequest
+        };
+    }
 
     [Function("RequestEmailVerification")]
     public Task<IActionResult> RequestEmailVerificationAsync(
@@ -121,5 +151,30 @@ public sealed class AuthenticationFunctions(IAuthenticationService authenticatio
             },
             _ => new BadRequestObjectResult(error)
         };
+    }
+
+    private static string BuildVerificationPage(bool isSuccess, string message)
+    {
+        var safeMessage = WebUtility.HtmlEncode(message);
+        var heading = isSuccess ? "Email verified" : "Verification unsuccessful";
+        var accent = isSuccess ? "#2F7D57" : "#B42318";
+
+        return $$"""
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>{{heading}} | FlatPlate</title>
+              </head>
+              <body style="margin:0;background:#F5F8F5;font-family:Segoe UI,Arial,sans-serif;color:#173D2B">
+                <main style="max-width:560px;margin:64px auto;padding:32px;background:#fff;border-radius:12px">
+                  <h1 style="margin-top:0;color:{{accent}}">{{heading}}</h1>
+                  <p>{{safeMessage}}</p>
+                  <p>You can close this page and return to FlatPlate.</p>
+                </main>
+              </body>
+            </html>
+            """;
     }
 }
