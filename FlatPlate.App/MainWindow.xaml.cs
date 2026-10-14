@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     private readonly bool _ownsContext;
     private HttpClient? _httpClient;
     private AuthenticationSession? _session;
+    private HomeDashboardViewModel? _homeViewModel;
     private MainWindowViewModel? _mainViewModel;
     private PriceBookCoordinator? _priceCoordinator;
     private RecipeLibraryCoordinator? _recipeCoordinator;
@@ -124,13 +125,18 @@ public partial class MainWindow : Window
             .OrderBy(store => store.Name)
             .ToList();
 
-        WeeklyPlanner.DataContext = new WeeklyPlannerViewModel(
+        var plannerViewModel = new WeeklyPlannerViewModel(
             planService,
             ingredientMerger,
             budgetCalculator,
             new DialogService(),
             recipes,
             stores);
+        WeeklyPlanner.DataContext = plannerViewModel;
+
+        _homeViewModel = new HomeDashboardViewModel(_session!, plannerViewModel);
+        _homeViewModel.NavigateRequested += NavigateToPage;
+        Home.DataContext = _homeViewModel;
 
         var priceReader = new PriceBookReadService(_context);
         _priceCoordinator = new PriceBookCoordinator(
@@ -175,6 +181,12 @@ public partial class MainWindow : Window
 
     private void DisposeResources()
     {
+        if (_homeViewModel is not null)
+        {
+            _homeViewModel.NavigateRequested -= NavigateToPage;
+            _homeViewModel.Dispose();
+        }
+
         _priceCoordinator?.Dispose();
         _recipeCoordinator?.Dispose();
         _mainViewModel?.Dispose();
@@ -191,4 +203,16 @@ public partial class MainWindow : Window
         => AuthenticationApiEndpoint.Resolve(
             Environment.GetEnvironmentVariable(
                 AuthenticationApiEndpoint.EnvironmentVariableName));
+
+    private void NavigateToPage(WorkspacePage page)
+    {
+        WorkspaceTabs.SelectedIndex = page switch
+        {
+            WorkspacePage.Home => 0,
+            WorkspacePage.RecipeLibrary => 1,
+            WorkspacePage.PriceBook => 2,
+            WorkspacePage.WeeklyPlanner => 3,
+            _ => WorkspaceTabs.SelectedIndex,
+        };
+    }
 }

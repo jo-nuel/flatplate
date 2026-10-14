@@ -1,96 +1,269 @@
 <UserControl x:Class="FlatPlate.App.Views.HomeView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="980"
-                    Margin="32"
-                    HorizontalAlignment="Center">
-            <TextBlock FontSize="30"
-                       FontWeight="SemiBold"
-                       Foreground="#173D2B"
-                       Text="{Binding WelcomeMessage}" />
-            <TextBlock Margin="0,8,0,28"
-                       FontSize="15"
-                       Foreground="#58665E"
-                       Text="Build your week, stay within budget, and turn every recipe into one organised shop." />
+    <UserControl.Resources>
+        <Style x:Key="DashboardActionButton"
+               TargetType="Button">
+            <Setter Property="Padding"
+                    Value="20" />
+            <Setter Property="Background"
+                    Value="{StaticResource FlatPlateSurfaceBrush}" />
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource FlatPlateBorderBrush}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ActionBorder"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="ActionBorder"
+                                        Property="Background"
+                                        Value="{StaticResource FlatPlateGreenSoftBrush}" />
+                                <Setter TargetName="ActionBorder"
+                                        Property="BorderBrush"
+                                        Value="#A9CDB8" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused"
+                                     Value="True">
+                                <Setter TargetName="ActionBorder"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource FlatPlateGreenBrush}" />
+                                <Setter TargetName="ActionBorder"
+                                        Property="BorderThickness"
+                                        Value="2" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
 
-            <UniformGrid Columns="3">
-                <Border Margin="0,0,12,12"
-                        Padding="22"
-                        Background="White"
-                        CornerRadius="12">
-                    <StackPanel>
-                        <TextBlock FontSize="28"
-                                   Text="1" />
-                        <TextBlock Margin="0,12,0,5"
-                                   FontSize="18"
-                                   FontWeight="SemiBold"
-                                   Text="Choose recipes" />
-                        <TextBlock Foreground="#66736B"
-                                   TextWrapping="Wrap"
-                                   Text="Browse the recipe library and choose meals that fit your week." />
-                    </StackPanel>
-                </Border>
-                <Border Margin="6,0,6,12"
-                        Padding="22"
-                        Background="White"
-                        CornerRadius="12">
-                    <StackPanel>
-                        <TextBlock FontSize="28"
-                                   Text="2" />
-                        <TextBlock Margin="0,12,0,5"
-                                   FontSize="18"
-                                   FontWeight="SemiBold"
-                                   Text="Plan seven days" />
-                        <TextBlock Foreground="#66736B"
-                                   TextWrapping="Wrap"
-                                   Text="Place meals into the weekly planner and set your shopping budget." />
-                    </StackPanel>
-                </Border>
-                <Border Margin="12,0,0,12"
-                        Padding="22"
-                        Background="White"
-                        CornerRadius="12">
-                    <StackPanel>
-                        <TextBlock FontSize="28"
-                                   Text="3" />
-                        <TextBlock Margin="0,12,0,5"
-                                   FontSize="18"
-                                   FontWeight="SemiBold"
-                                   Text="Shop with confidence" />
-                        <TextBlock Foreground="#66736B"
-                                   TextWrapping="Wrap"
-                                   Text="Use one merged list and compare the estimated basket price." />
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
+    <Grid Background="{StaticResource FlatPlateCanvasBrush}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="1120"
+                        Margin="32,28,32,40"
+                        HorizontalAlignment="Center">
+                <TextBlock FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource FlatPlateGreenBrush}"
+                           Text="YOUR WEEK AT A GLANCE" />
+                <TextBlock Margin="0,6,0,0"
+                           FontSize="32"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource FlatPlateInkBrush}"
+                           Text="{Binding WelcomeMessage}" />
+                <TextBlock Margin="0,8,0,26"
+                           FontSize="15"
+                           Foreground="{StaticResource FlatPlateMutedBrush}"
+                           Text="Plan meals, watch your budget, and keep the weekly shop organised." />
 
-            <Border Margin="0,18,0,0"
-                    Padding="24"
-                    Background="#E5F2EA"
-                    CornerRadius="12">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock FontSize="19"
-                                   FontWeight="SemiBold"
-                                   Foreground="#225E41"
-                                   Text="Start with the Weekly Planner" />
-                        <TextBlock Margin="0,6,0,0"
-                                   Foreground="#496356"
-                                   Text="Select the Weekly Planner tab above to build your first meal plan." />
-                    </StackPanel>
-                    <TextBlock Grid.Column="1"
-                               Margin="24,0,0,0"
-                               VerticalAlignment="Center"
-                               FontSize="32"
-                               Foreground="#2F7D57"
-                               Text="→" />
-                </Grid>
-            </Border>
-        </StackPanel>
-    </ScrollViewer>
+                <Border Padding="28"
+                        Background="{StaticResource FlatPlateInkBrush}"
+                        CornerRadius="18">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="320" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Foreground="#BFD8CA"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Text="CURRENT PLAN" />
+                            <TextBlock Margin="0,8,0,0"
+                                       Foreground="White"
+                                       FontSize="26"
+                                       FontWeight="SemiBold"
+                                       Text="{Binding WeekRangeLabel}" />
+                            <TextBlock Margin="0,8,0,0"
+                                       Foreground="#D9E8DF"
+                                       FontSize="14"
+                                       Text="{Binding PlanningProgressText}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1"
+                                    Margin="28,0,0,0"
+                                    VerticalAlignment="Center">
+                            <DockPanel Margin="0,0,0,9">
+                                <TextBlock DockPanel.Dock="Right"
+                                           Foreground="White"
+                                           FontWeight="SemiBold"
+                                           Text="{Binding PlanningPercentage,
+                                                          StringFormat={}{0:0}%}" />
+                                <TextBlock Foreground="#BFD8CA"
+                                           Text="Planning progress" />
+                            </DockPanel>
+                            <ProgressBar Height="10"
+                                         Minimum="0"
+                                         Maximum="100"
+                                         Background="#315744"
+                                         BorderThickness="0"
+                                         Foreground="#79C49A"
+                                         Value="{Binding PlanningPercentage}" />
+                            <Button Margin="0,18,0,0"
+                                    HorizontalAlignment="Left"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding OpenPlannerCommand}"
+                                    Content="{Binding PlannerActionLabel}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <UniformGrid Margin="0,18,0,0"
+                             Columns="4">
+                    <Border Margin="0,0,7,0"
+                            Style="{StaticResource SurfaceCard}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MetricLabel}"
+                                       Text="MEALS PLANNED" />
+                            <TextBlock Style="{StaticResource MetricValue}"
+                                       Text="{Binding PlannedMealCount}" />
+                            <TextBlock Margin="0,4,0,0"
+                                       Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="out of 21" />
+                        </StackPanel>
+                    </Border>
+                    <Border Margin="7,0"
+                            Style="{StaticResource SurfaceCard}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MetricLabel}"
+                                       Text="ESTIMATED SPEND" />
+                            <TextBlock Style="{StaticResource MetricValue}"
+                                       Text="{Binding EstimatedSpend,
+                                                      StringFormat={}{0:C2}}" />
+                            <TextBlock Margin="0,4,0,0"
+                                       Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="{Binding SelectedStoreName}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Margin="7,0"
+                            Style="{StaticResource SurfaceCard}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MetricLabel}"
+                                       Text="BUDGET STATUS" />
+                            <TextBlock Style="{StaticResource MetricValue}"
+                                       FontSize="19"
+                                       Text="{Binding BudgetVarianceText}" />
+                            <TextBlock Margin="0,4,0,0"
+                                       Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="updates as you plan" />
+                        </StackPanel>
+                    </Border>
+                    <Border Margin="7,0,0,0"
+                            Style="{StaticResource SurfaceCard}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MetricLabel}"
+                                       Text="MISSING PRICES" />
+                            <TextBlock Style="{StaticResource MetricValue}"
+                                       Text="{Binding MissingPriceCount}" />
+                            <TextBlock Margin="0,4,0,0"
+                                       Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="items need attention" />
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <Border Margin="0,18,0,0"
+                        Style="{StaticResource SurfaceCard}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock FontSize="19"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateInkBrush}"
+                                       Text="{Binding NextStepTitle}" />
+                            <TextBlock Margin="0,6,0,0"
+                                       Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="{Binding NextStepDescription}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Margin="28,0,0,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding OpenPlannerCommand}"
+                                Content="{Binding PlannerActionLabel}" />
+                    </Grid>
+                </Border>
+
+                <TextBlock Margin="0,28,0,12"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource FlatPlateInkBrush}"
+                           Text="Quick actions" />
+                <UniformGrid Columns="3">
+                    <Button Margin="0,0,8,0"
+                            Style="{StaticResource DashboardActionButton}"
+                            Command="{Binding OpenPlannerCommand}">
+                        <StackPanel>
+                            <TextBlock Foreground="{StaticResource FlatPlateGreenBrush}"
+                                       FontWeight="SemiBold"
+                                       Text="01  PLAN" />
+                            <TextBlock Margin="0,12,0,4"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateInkBrush}"
+                                       Text="Weekly Planner" />
+                            <TextBlock Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Choose meals and set your budget."
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Button>
+                    <Button Margin="8,0"
+                            Style="{StaticResource DashboardActionButton}"
+                            Command="{Binding OpenRecipesCommand}">
+                        <StackPanel>
+                            <TextBlock Foreground="{StaticResource FlatPlateGreenBrush}"
+                                       FontWeight="SemiBold"
+                                       Text="02  CHOOSE" />
+                            <TextBlock Margin="0,12,0,4"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateInkBrush}"
+                                       Text="Recipe Library" />
+                            <TextBlock Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Browse meals for the week ahead."
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Button>
+                    <Button Margin="8,0,0,0"
+                            Style="{StaticResource DashboardActionButton}"
+                            Command="{Binding OpenPriceBookCommand}">
+                        <StackPanel>
+                            <TextBlock Foreground="{StaticResource FlatPlateGreenBrush}"
+                                       FontWeight="SemiBold"
+                                       Text="03  CHECK" />
+                            <TextBlock Margin="0,12,0,4"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateInkBrush}"
+                                       Text="Price Book" />
+                            <TextBlock Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Review prices before estimating."
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Button>
+                </UniformGrid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>

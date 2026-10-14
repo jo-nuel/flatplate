@@ -13,6 +13,8 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
     private const int DaysInWeek = 7;
     private const decimal DefaultWeeklyBudget = 150m;
 
+    public const int TotalMealSlots = DaysInWeek * 3;
+
     private readonly WeeklyPlanService _planService;
     private readonly IIngredientMerger _ingredientMerger;
     private readonly IBudgetCalculator _budgetCalculator;
@@ -86,6 +88,7 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
         {
             if (SetProperty(ref _selectedStore, value))
             {
+                OnPropertyChanged(nameof(SelectedStoreName));
                 RefreshBudget();
             }
         }
@@ -111,12 +114,44 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
             if (SetProperty(ref _budgetResult, value))
             {
                 OnPropertyChanged(nameof(HasMissingPrices));
+                OnPropertyChanged(nameof(MissingPriceCount));
+                OnPropertyChanged(nameof(BudgetRemaining));
+                OnPropertyChanged(nameof(BudgetOverage));
+                OnPropertyChanged(nameof(BudgetVarianceText));
+                OnPropertyChanged(nameof(DisplayPercentageUsed));
             }
         }
     }
 
     public bool HasMissingPrices =>
         BudgetResult.MissingPriceItems.Count > 0;
+
+    public int MissingPriceCount => BudgetResult.MissingPriceItems.Count;
+
+    public int PlannedMealCount => Days
+        .SelectMany(day => day.MealSlots)
+        .Count(slot => slot.SelectedRecipe is not null);
+
+    public string PlanningProgressText =>
+        $"{PlannedMealCount} of {TotalMealSlots} meals planned";
+
+    public string SelectedStoreName => SelectedStore?.Name ?? "No store selected";
+
+    public decimal BudgetRemaining =>
+        Math.Max(0m, WeeklyBudget - BudgetResult.TotalCost);
+
+    public decimal BudgetOverage =>
+        Math.Max(0m, BudgetResult.TotalCost - WeeklyBudget);
+
+    public string BudgetVarianceText => BudgetResult.IsOverBudget
+        ? $"{BudgetOverage:C2} over budget"
+        : $"{BudgetRemaining:C2} remaining";
+
+    public decimal DisplayPercentageUsed =>
+        Math.Clamp(BudgetResult.PercentageUsed, 0m, 100m);
+
+    public string WeekRangeLabel =>
+        $"{WeekStartDate:ddd, d MMM} – {WeekStartDate.AddDays(DaysInWeek - 1):ddd, d MMM}";
 
     public DateTime WeekStartDate
     {
@@ -127,6 +162,7 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
 
             if (SetProperty(ref _weekStartDate, monday))
             {
+                OnPropertyChanged(nameof(WeekRangeLabel));
                 LoadWeek();
             }
         }
@@ -140,6 +176,8 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
             if (SetProperty(ref _days, value))
             {
                 ClearWeekCommand.RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(PlannedMealCount));
+                OnPropertyChanged(nameof(PlanningProgressText));
             }
         }
     }

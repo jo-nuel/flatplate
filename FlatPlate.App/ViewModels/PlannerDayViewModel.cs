@@ -32,5 +32,7 @@ public sealed class PlannerDayViewModel
 
     public string DateLabel => Date.ToString("d MMM");
 
+    public bool IsToday => Date == DateOnly.FromDateTime(DateTime.Today);
+
     public IReadOnlyList<MealSlotViewModel> MealSlots { get; }
 }
