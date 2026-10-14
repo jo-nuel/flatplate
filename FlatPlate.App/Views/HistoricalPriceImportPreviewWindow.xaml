@@ -15,11 +15,10 @@
         <StackPanel Grid.Row="2" Margin="0,0,0,8">
             <TextBlock Text="{Binding Package.Files.CsvPath, StringFormat='Price CSV: {0}'}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding Package.Files.EvidencePath, StringFormat='Original evidence: {0}'}" TextWrapping="Wrap" />
-            <TextBlock Text="{Binding Package.Files.ReceiptPath, StringFormat='Personal approval receipt: {0}'}" TextWrapping="Wrap" />
         </StackPanel>
         <TextBlock Grid.Row="3" Text="{Binding Summary}" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,0,0,8" />
         <DataGrid Grid.Row="4" x:Name="HistoricalRowsGrid" ItemsSource="{Binding Rows}"
-                  AutomationProperties.Name="Historical prices and independent receipt review"
+                  AutomationProperties.Name="Historical prices and evidence validation"
                   AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Ingredient" Binding="{Binding Record.IngredientName}" Width="*" MinWidth="130" />
@@ -30,15 +29,14 @@
                 <DataGridTextColumn Header="Unit" Binding="{Binding Record.BaseUnit}" Width="45" />
                 <DataGridTextColumn Header="Observed" Binding="{Binding Record.ObservedDate, StringFormat=yyyy-MM-dd}" Width="95" />
                 <DataGridCheckBoxColumn Header="In stock then" Binding="{Binding Record.InStockAtObservation, Mode=OneWay}" Width="85" />
-                <DataGridTextColumn Header="Initial evidence" Binding="{Binding FinalHumanApproval}" Width="95" />
-                <DataGridTextColumn Header="Receipt review" Binding="{Binding ReviewStatus}" Width="190" />
+                <DataGridTextColumn Header="Validation" Binding="{Binding ReviewStatus}" Width="190" />
             </DataGrid.Columns>
         </DataGrid>
         <TextBlock Grid.Row="5" x:Name="HistoricalIssueText" Text="{Binding Issue}" TextWrapping="Wrap"
                    Foreground="#A32020" Margin="0,10,0,0" AutomationProperties.LiveSetting="Polite" />
         <CheckBox Grid.Row="6" x:Name="HistoricalAcknowledgement" IsChecked="{Binding Acknowledged}"
                   Margin="0,12,0,0" AutomationProperties.Name="Confirm reviewed historical batch">
-            <TextBlock Text="I confirm that this receipt represents my completed personal product review and I want to import this entire historical batch."
+            <TextBlock Text="I have reviewed this batch and confirm importing all 40 historical reference prices dated 17 September 2026, including the Coles oil marked out of stock then. Existing prices will not be replaced."
                        TextWrapping="Wrap" />
         </CheckBox>
         <TextBlock Grid.Row="7" x:Name="HistoricalStatusText" Text="{Binding Status}" TextWrapping="Wrap"

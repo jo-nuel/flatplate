@@ -75,10 +75,5 @@ public sealed record HistoricalPriceMatch(HistoricalPriceRecord Record, int? Ing
     string FinalHumanApproval, bool OilHistoricalReferencePolicyAccepted)
 {
     public bool TechnicallyMatched => IngredientId.HasValue && StoreId.HasValue && TechnicalIssues.Count == 0;
-    // Original UserConfirmed/ApprovedForImport/FinalHumanApproval describe archived evidence.
-    // This separate snapshot is set only after the whole receipt and database match validate.
-    // It is for preview display; saving must validate again inside the transaction.
-    public bool HasValidatedApprovalReceipt { get; internal init; }
-    public string ReviewStatus => HasValidatedApprovalReceipt ? "Approved by receipt" : "Pending personal review";
-    public bool RequiresPersonalProductReview => !HasValidatedApprovalReceipt;
+    // Original flags describe archived research, not the current import confirmation.
 }

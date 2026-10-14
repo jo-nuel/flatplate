@@ -7,14 +7,12 @@ namespace FlatPlate.App.ViewModels;
 public sealed record HistoricalPricePreviewRow(HistoricalPriceMatch Match, string ReviewStatus)
 {
     public HistoricalPriceRecord Record => Match.Record;
-    public string FinalHumanApproval => Match.FinalHumanApproval;
     public int? IngredientId => Match.IngredientId;
     public int? StoreId => Match.StoreId;
     public bool TechnicallyMatched => Match.TechnicallyMatched;
-    public bool HasValidatedApprovalReceipt => Match.HasValidatedApprovalReceipt;
 }
 
-/// <summary>Explicit whole-batch confirmation only; this model does not approve products.</summary>
+/// <summary>Requires explicit whole-batch confirmation before saving validated historical prices.</summary>
 public sealed class HistoricalPriceImportPreviewViewModel : ViewModelBase
 {
     private Func<int>? _save;
@@ -25,14 +23,8 @@ public sealed class HistoricalPriceImportPreviewViewModel : ViewModelBase
         IReadOnlyList<HistoricalPriceMatch> rows, string? issue)
     {
         Package = package; Issue = issue ?? "";
-        Rows = rows.Select(row =>
-        {
-            var item = package.Receipt.Items.SingleOrDefault(i => i.Record == row.Record);
-            var status = row.HasValidatedApprovalReceipt ? row.ReviewStatus : item is null ? "Receipt mismatch"
-                : !item.PersonallyReviewed ? "Pending personal review" : !item.ApprovedForImport ? "Not approved"
-                : "Approved in receipt; blocked";
-            return new HistoricalPricePreviewRow(row, status);
-        }).ToArray();
+        Rows = rows.Select(row => new HistoricalPricePreviewRow(row,
+            row.TechnicallyMatched ? "Matches historical evidence" : string.Join(" ", row.TechnicalIssues))).ToArray();
         ConfirmImportCommand = new RelayCommand(Confirm, () => CanConfirmImport);
         CancelCommand = new RelayCommand(Close, () => !_busy);
     }
@@ -52,8 +44,8 @@ public sealed class HistoricalPriceImportPreviewViewModel : ViewModelBase
         set { _acknowledged = value; Changed(); }
     }
     public bool CanConfirmImport => !_closed && !_busy && !HasImported && Acknowledged && _save is not null
-        && Issue.Length == 0 && Rows.Count == 40 && Rows.All(r => r.TechnicallyMatched && r.HasValidatedApprovalReceipt);
-    public string Summary => $"{Rows.Count} historical rows · reviewer: {Package.Receipt.ReviewerName} · reviewed: {Package.Receipt.ReviewedOn:yyyy-MM-dd}";
+        && Issue.Length == 0 && Rows.Count == 40 && Rows.All(r => r.TechnicallyMatched);
+    public string Summary => $"{Rows.Count} historical rows · observed: 2026-09-17 · explicit confirmation required";
     public event EventHandler? CloseRequested;
     internal void ConnectImport(Func<int> save, Action<int>? afterCommit = null)
     { _save = save; _afterCommit = afterCommit; Changed(); }

@@ -1,27 +1,17 @@
-# Historical prices: manual import
+# Historical reference prices: manual import
 
-These files are review material. No product has been approved automatically. Complete your personal product review before supplying a real approval receipt.
-
-1. Use Recipe Library to import Person B's eight prepared recipes first, if they are not already present.
-2. In Price Book, select **Import Historical Prices**.
+1. In Recipe Library, manually import the two prepared recipe CSVs from `Data/Seeds` first. Existing recipes and user edits are preserved.
+2. In Price Book choose **Import Historical Prices**.
 3. Select `FreshCrawl_Historical_Prices_Preparation.csv` (40 rows, eight columns).
-4. Select `FreshCrawl_Historical_Price_Review.csv` as the original 70-column evidence file. Do not change its original Pending flags.
-5. Select your separately completed approval receipt JSON. The application does not create this receipt or fill in review decisions.
-6. Review the preview, confirm the acknowledgement only after your personal review, and press **Confirm Import**. Cancel or close at any point before confirmation to save nothing.
+4. Select `FreshCrawl_Historical_Price_Review.csv` as the original evidence.
+5. Review the preview. Tick the explicit whole-batch confirmation, then choose **Confirm Import**. Cancel/close before confirmation saves nothing. No personal name or individual approval receipt is required.
 
-The preparation CSV is a deterministic projection of the original evidence: IngredientName, StoreName, PriceAUD, PackSizeBase, BaseUnit, ObservedDate, ProductId, InStockAtObservation. It is not ordinary Price CSV V1 and contains no approval decisions.
+The original evidence hash pins dataset revision `4f802169940df31e09f2612f6a6288ffd72dc4fd`. Its archived Pending flags are preserved as original research, not the current confirmation state. Every price, SKU, pack size, unit, date and stock value must match this evidence. Both selected files are checked again before saving. The transaction reloads and checks the source, all forty records, database ingredient/store identities and existing price pairs. An existing pair blocks the whole batch; nothing is overwritten or deleted. Duplicate imports are rejected.
 
-The receipt uses the existing `HistoricalPriceApprovalReceipt` structure, with exact case-sensitive property names:
+All new prices refer to 17 September 2026, not current prices. SQLite stores the date using an unspecified-kind midnight placeholder, without inventing an observation time or timezone. Coles Vegetable Oil SKU 126745 retains AUD 4.80 / 750 mL and stock=false in the evidence. It is a historical reference, not a current availability claim. Source is Seeded, as supported by the existing enum.
 
-- `ReviewerName`: your actual name; `ReviewedOn`: the actual review date, `yyyy-MM-dd`.
-- `EvidenceSha256`: `aaa279633e551e3b45e1f61d88702d6298504c8da3d4f056c1d0a7fad9bb2995`.
-- `DatasetRevision`: `4f802169940df31e09f2612f6a6288ffd72dc4fd`.
-- `Items`: exactly 40 unique ingredient/store decisions. Each item contains `Record`, `PersonallyReviewed`, and `ApprovedForImport`.
-- Each `Record` contains the eight CSV fields with matching values: names/units/product ID/date as strings, price and quantity as exact decimal JSON numbers, stock as a JSON boolean.
-- Both decision booleans must reflect your actual completed review and approval. Missing, false or inconsistent decisions block the batch. The acknowledgement checkbox does not approve missing receipt decisions.
+Keep `Data/Research` and `Data/Seeds` in the full project ZIP. Files are selected by the user, with no developer-specific paths. Ordinary seven-column Price CSV V1 is unchanged; historical date-only records use this separate importer. Historical exports have no timezone and cannot be reimported through ordinary V1 without a real, explicitly supplied timestamp policy.
 
-The observed date remains 17 September 2026 without an invented timezone. Coles Vegetable Oil SKU 126745 retains AUD 4.80 / 750 mL and stock=false in the source evidence. It is a historical reference, not a claim of current availability.
+## Student review and AI disclosure
 
-Confirmation rechecks all selected file hashes and calls the transactional historical importer. The importer revalidates original evidence, the complete receipt, ingredient/store identities and existing price pairs inside its transaction. Any existing pair blocks the whole batch; existing prices are never overwritten. A repeated import is rejected.
-
-Keep this Data/Research directory and Data/Seeds with the complete project ZIP. File selection uses paths chosen by the user and does not depend on a developer-specific absolute path. No approved receipt is included with the project.
+AI assisted Person B implementation, validation and documentation. The student must review the final diff, understand the transaction and validation flow, and personally run the application before final submission. Automated isolated tests are not personal product verification or manual acceptance.

@@ -5,7 +5,7 @@ using Microsoft.VisualBasic.FileIO;
 
 namespace FlatPlate.App.Services;
 
-/// <summary>Immutable initial evidence; later human sign-off must be supplied separately.</summary>
+/// <summary>Immutable historical source; archived review flags are not live import decisions.</summary>
 public sealed class HistoricalPriceEvidence
 {
     public const string InitialEvidenceSha256 = "aaa279633e551e3b45e1f61d88702d6298504c8da3d4f056c1d0a7fad9bb2995";

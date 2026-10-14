@@ -34,7 +34,7 @@ public sealed class PriceBookCoordinator : IDisposable
         ExportCsvCommand = new RelayCommand(() => Run(Export, "Export failed. Check the visible prices and destination file."), () => Ready && ViewModel.VisiblePrices.Cast<object>().Any());
         ImportCsvCommand = new RelayCommand(() => Run(PreviewImport, "Could not preview this file. Check that it is a readable UTF-8 CSV."), () => Ready);
         ImportHistoricalPricesCommand = new RelayCommand(() => Run(PreviewHistoricalImport,
-            "Could not read the historical CSV, evidence or approval receipt. Check the files and try again."),
+            "Could not read the historical CSV or evidence. Check the files and try again."),
             () => Ready && _writer is not null && _interaction is IHistoricalPriceBookInteraction);
         ReloadCommand = new RelayCommand(() => Load(), () => !_disposed);
         ViewModel.ConnectActions(this);
@@ -218,7 +218,7 @@ public sealed class PriceBookCoordinator : IDisposable
         var package = files.Read(selection, _ingredients.Select(i => i.Name), _stores.Select(s => s.Name));
         var rows = new HistoricalPriceMatchService(_writer.Context, package.Evidence).Review(package.Records);
         string? issue = null;
-        try { rows = new HistoricalPriceApprovalService(_writer.Context, package.Evidence).Validate(package.Records, package.Receipt); }
+        try { rows = new HistoricalPriceBatchValidator(_writer.Context, package.Evidence).Validate(package.Records); }
         catch (InvalidDataException error) { issue = error.Message; }
         var preview = new HistoricalPriceImportPreviewViewModel(package, rows, issue);
         LastHistoricalPreview = preview;
@@ -228,7 +228,7 @@ public sealed class PriceBookCoordinator : IDisposable
             files.RequireUnchanged(package);
             var fresh = files.Read(selection, _ingredients.Select(i => i.Name), _stores.Select(s => s.Name));
             files.RequireUnchanged(package);
-            return new HistoricalPriceImportService(_writer.Context).Import(selection.EvidencePath, fresh.Records, fresh.Receipt);
+            return new HistoricalPriceImportService(_writer.Context).Import(selection.EvidencePath, fresh.Records, preview.Acknowledged);
         }, count =>
         {
             if (Load()) ViewModel.SetMessage($"Imported {count} historical prices. Existing prices and the store filter were preserved.");

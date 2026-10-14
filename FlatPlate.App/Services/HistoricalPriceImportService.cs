@@ -3,33 +3,31 @@ using FlatPlate.Core.Models;
 
 namespace FlatPlate.App.Services;
 
-/// <summary>Inserts a reviewed historical batch using the host context; never trusts preview approval.</summary>
+/// <summary>Inserts an explicitly confirmed historical batch; revalidates inside the transaction.</summary>
 public sealed class HistoricalPriceImportService
 {
     private readonly FlatPlateDbContext _context;
-    private readonly TimeProvider _clock;
 
-    public HistoricalPriceImportService(FlatPlateDbContext context, TimeProvider? clock = null)
+    public HistoricalPriceImportService(FlatPlateDbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _clock = clock ?? TimeProvider.System;
     }
 
     public int Import(string evidencePath, IReadOnlyList<HistoricalPriceRecord> records,
-        HistoricalPriceApprovalReceipt receipt, CancellationToken cancellationToken = default)
+        bool userConfirmed, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(evidencePath);
         ArgumentNullException.ThrowIfNull(records);
-        ArgumentNullException.ThrowIfNull(receipt);
+        if (!userConfirmed)
+            throw new System.IO.InvalidDataException("Explicit confirmation of this historical batch is required. Nothing was saved.");
 
         return AppWriteTransaction.Execute(_context, () =>
         {
             cancellationToken.ThrowIfCancellationRequested();
             // Read and hash the source again after the transaction starts. An earlier
-            // approved preview cannot authorise changed files, receipts or database pairs.
+            // validated preview cannot authorise changed evidence or database pairs.
             var evidence = HistoricalPriceEvidence.LoadInitial(evidencePath);
-            var matches = new HistoricalPriceApprovalService(_context, evidence, _clock)
-                .Validate(records, receipt);
+            var matches = new HistoricalPriceBatchValidator(_context, evidence).Validate(records);
             cancellationToken.ThrowIfCancellationRequested();
 
             var entries = matches.Select(match => new PriceEntry
