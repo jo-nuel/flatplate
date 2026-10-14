@@ -217,7 +217,8 @@
                              Maximum="100"
                              Background="#DFE8E2"
                              BorderThickness="0"
-                             Value="{Binding DisplayPercentageUsed}">
+                             Value="{Binding DisplayPercentageUsed,
+                                             Mode=OneWay}">
                     <ProgressBar.Style>
                         <Style TargetType="ProgressBar">
                             <Setter Property="Foreground"

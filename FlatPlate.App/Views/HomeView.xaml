@@ -115,7 +115,8 @@
                                          Background="#315744"
                                          BorderThickness="0"
                                          Foreground="#79C49A"
-                                         Value="{Binding PlanningPercentage}" />
+                                         Value="{Binding PlanningPercentage,
+                                                         Mode=OneWay}" />
                             <Button Margin="0,18,0,0"
                                     HorizontalAlignment="Left"
                                     Style="{StaticResource SecondaryButton}"
