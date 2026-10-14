@@ -75,7 +75,11 @@ if (emailProvider.Equals("Smtp", StringComparison.OrdinalIgnoreCase))
     smtpSettings.Validate();
     builder.Services.AddSingleton(smtpSettings);
     builder.Services.AddSingleton<IEmailTransport, SmtpEmailTransport>();
-    builder.Services.AddSingleton<IAccountMessageSender, AccountEmailMessageSender>();
+    var publicApiBaseAddress = ResolvePublicApiBaseAddress(builder.Configuration);
+    builder.Services.AddSingleton<IAccountMessageSender>(services =>
+        new AccountEmailMessageSender(
+            services.GetRequiredService<IEmailTransport>(),
+            publicApiBaseAddress));
 }
 else if (emailProvider.Equals("Deferred", StringComparison.OrdinalIgnoreCase))
 {
@@ -119,3 +123,17 @@ static SmtpSecurityMode RequiredSecurityMode(
         ? securityMode
         : throw new InvalidOperationException(
             $"{key} must be 'StartTls' or 'SslOnConnect'.");
+
+static Uri ResolvePublicApiBaseAddress(IConfiguration configuration)
+{
+    var configuredAddress = configuration["Authentication:PublicApiBaseUrl"];
+    if (!string.IsNullOrWhiteSpace(configuredAddress))
+    {
+        return new Uri(configuredAddress, UriKind.Absolute);
+    }
+
+    var azureHostname = configuration["WEBSITE_HOSTNAME"];
+    return string.IsNullOrWhiteSpace(azureHostname)
+        ? new Uri("http://localhost:7071/api/")
+        : new Uri($"https://{azureHostname.TrimEnd('/')}/api/");
+}

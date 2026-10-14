@@ -12,7 +12,9 @@ public sealed class AccountEmailMessageSenderTests
     public async Task SendEmailVerificationAsync_CreatesAddressedExpiringCodeMessage()
     {
         var transport = new CapturingEmailTransport();
-        var sender = new AccountEmailMessageSender(transport);
+        var sender = new AccountEmailMessageSender(
+            transport,
+            new Uri("https://flatplate.example/api/"));
         var account = new UserAccount
         {
             DisplayName = "Jonathan & Team",
@@ -27,7 +29,15 @@ public sealed class AccountEmailMessageSenderTests
             Assert.That(transport.Email.Subject, Does.Contain("Verify"));
             Assert.That(transport.Email.TextBody, Does.Contain("123456"));
             Assert.That(transport.Email.TextBody, Does.Contain("30 minutes"));
+            Assert.That(
+                transport.Email.TextBody,
+                Does.Contain("https://flatplate.example/api/auth/verify-email-link"));
             Assert.That(transport.Email.HtmlBody, Does.Contain("Jonathan &amp; Team"));
+            Assert.That(transport.Email.HtmlBody, Does.Contain("Verify email"));
+            Assert.That(transport.Email.HtmlBody, Does.Contain("<a href="));
+            Assert.That(
+                transport.Email.HtmlBody,
+                Does.Contain("email=jonathan%40example.com&amp;token=123456"));
         });
     }
 
@@ -35,7 +45,9 @@ public sealed class AccountEmailMessageSenderTests
     public async Task SendPasswordResetAsync_IncludesSafetyGuidance()
     {
         var transport = new CapturingEmailTransport();
-        var sender = new AccountEmailMessageSender(transport);
+        var sender = new AccountEmailMessageSender(
+            transport,
+            new Uri("https://flatplate.example/api/"));
         var account = new UserAccount
         {
             DisplayName = "Jonathan",

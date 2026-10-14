@@ -98,6 +98,14 @@
                                     Foreground="#2F7D57"
                                     Command="{Binding ShowResetPasswordCommand}"
                                     Content="Forgot your password?" />
+                            <Button Margin="0,4,0,0"
+                                    Padding="4"
+                                    HorizontalAlignment="Center"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Foreground="#2F7D57"
+                                    Command="{Binding ShowVerifyEmailCommand}"
+                                    Content="Verify your email" />
 
                             <Separator Margin="0,18" />
                             <StackPanel HorizontalAlignment="Center"
