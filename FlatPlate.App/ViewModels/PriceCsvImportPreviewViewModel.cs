@@ -22,6 +22,7 @@ public sealed class PriceCsvImportPreviewViewModel : ViewModelBase
 {
     private readonly bool _forImport;
     private Func<int>? _import;
+    private Action<int>? _afterCommit;
     private bool _isImporting;
     private string _importStatus = "Nothing has been saved.";
 
@@ -97,12 +98,13 @@ public sealed class PriceCsvImportPreviewViewModel : ViewModelBase
         ? "Insert new pairs only. Confirm Import saves the entire valid batch. Observation times require Z or an offset and are stored as UTC; their original offset text is not retained by the database. Source is supplied metadata, not independently verified provenance."
         : "Preview only. Nothing is saved. Original sources and observation times are shown for review.";
 
-    internal void ConnectImport(Func<int> import)
+    internal void ConnectImport(Func<int> import, Action<int>? afterCommit = null)
     {
         _import = import ?? throw new ArgumentNullException(nameof(import));
+        _afterCommit = afterCommit;
         Changed();
     }
-    internal void DisconnectImport() { _import = null; Changed(); }
+    internal void DisconnectImport() { _import = null; _afterCommit = null; Changed(); }
 
     private void ConfirmImport()
     {
@@ -115,14 +117,17 @@ public sealed class PriceCsvImportPreviewViewModel : ViewModelBase
             HasImported = true;
             Rows = Rows.Select(r => r with { ReviewStatus = "Imported" }).ToArray();
             _importStatus = $"Imported {ImportedCount} records. The transaction committed successfully.";
+            _afterCommit?.Invoke(ImportedCount);
         }
         catch (Exception exception) when (exception is InvalidDataException or ArgumentException or InvalidOperationException or DbUpdateException or System.Data.Common.DbException)
         {
             LastImportError = exception;
             var details = exception is PriceCsvImportValidationException validation ? validation.Issues
-                : new[] { new PriceCsvPreviewIssue("Batch", "Save", exception.Message) };
+                : new[] { new PriceCsvPreviewIssue("Batch", HasImported ? "Refresh" : "Save", exception.Message) };
             Issues = Issues.Concat(details).ToArray();
-            _importStatus = "Import failed. No records were saved. Close and select the CSV again after reviewing the problems.";
+            _importStatus = HasImported
+                ? $"Imported {ImportedCount} records. Prices were saved, but screen refresh failed. Do not import again; close and refresh."
+                : "Import failed. No records were saved. Close and select the CSV again after reviewing the problems.";
         }
         finally { _isImporting = false; Changed(); }
     }

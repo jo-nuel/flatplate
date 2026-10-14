@@ -176,7 +176,12 @@ public sealed class PriceBookCoordinator : IDisposable
         if (!Load()) return;
         var parsed = Csv().Parse(_files.Read(path));
         var preview = new PriceCsvImportPreviewViewModel(parsed, _ingredients, _stores, CurrentKeys(), forImport: _importer is not null);
-        if (_importer is not null) preview.ConnectImport(() => PersistImport(parsed));
+        if (_importer is not null) preview.ConnectImport(() => PersistImport(parsed), count =>
+        {
+            if (Load()) ViewModel.SetMessage($"Imported {count} price records. Existing prices were unchanged. The current store filter is preserved.");
+            else ViewModel.SetMessage($"Imported {count} price records, but the book could not reload. The records are saved; refresh before continuing.", true);
+            NotifyPriceSaved();
+        });
         ViewModel.SetPreview(preview);
         ViewModel.SetMessage(_importer is null ? $"Preview only: {preview.Rows.Count} parsed records, {preview.Issues.Count} issues. Nothing was saved."
             : $"{preview.Rows.Count} parsed records, {preview.Issues.Count} issues. Nothing is saved until Confirm Import.");
@@ -199,9 +204,6 @@ public sealed class PriceBookCoordinator : IDisposable
             ViewModel.SetMessage("Import failed. No records were saved. Review the preview problems and select the CSV again.", true);
             throw;
         }
-        if (Load()) ViewModel.SetMessage($"Imported {count} price records. Existing prices were unchanged. The current store filter is preserved.");
-        else ViewModel.SetMessage($"Imported {count} price records, but the book could not reload. The records are saved; refresh before continuing.", true);
-        NotifyPriceSaved();
         return count;
     }
 
@@ -226,11 +228,12 @@ public sealed class PriceBookCoordinator : IDisposable
             files.RequireUnchanged(package);
             var fresh = files.Read(selection, _ingredients.Select(i => i.Name), _stores.Select(s => s.Name));
             files.RequireUnchanged(package);
-            var count = new HistoricalPriceImportService(_writer.Context).Import(selection.EvidencePath, fresh.Records, fresh.Receipt);
+            return new HistoricalPriceImportService(_writer.Context).Import(selection.EvidencePath, fresh.Records, fresh.Receipt);
+        }, count =>
+        {
             if (Load()) ViewModel.SetMessage($"Imported {count} historical prices. Existing prices and the store filter were preserved.");
             else ViewModel.SetMessage($"Imported {count} historical prices, but the book could not refresh. The records are saved.", true);
             NotifyPriceSaved();
-            return count;
         });
         try { interaction.ShowHistoricalImportPreview(preview); }
         finally { preview.Close(); }

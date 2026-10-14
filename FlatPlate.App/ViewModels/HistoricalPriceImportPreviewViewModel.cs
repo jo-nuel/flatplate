@@ -18,6 +18,7 @@ public sealed record HistoricalPricePreviewRow(HistoricalPriceMatch Match, strin
 public sealed class HistoricalPriceImportPreviewViewModel : ViewModelBase
 {
     private Func<int>? _save;
+    private Action<int>? _afterCommit;
     private bool _acknowledged, _busy, _closed;
 
     public HistoricalPriceImportPreviewViewModel(HistoricalPriceImportPackage package,
@@ -54,11 +55,12 @@ public sealed class HistoricalPriceImportPreviewViewModel : ViewModelBase
         && Issue.Length == 0 && Rows.Count == 40 && Rows.All(r => r.TechnicallyMatched && r.HasValidatedApprovalReceipt);
     public string Summary => $"{Rows.Count} historical rows · reviewer: {Package.Receipt.ReviewerName} · reviewed: {Package.Receipt.ReviewedOn:yyyy-MM-dd}";
     public event EventHandler? CloseRequested;
-    internal void ConnectImport(Func<int> save) { _save = save; Changed(); }
+    internal void ConnectImport(Func<int> save, Action<int>? afterCommit = null)
+    { _save = save; _afterCommit = afterCommit; Changed(); }
     public void Close()
     {
         if (_closed || _busy) return;
-        _closed = true; _save = null;
+        _closed = true; _save = null; _afterCommit = null;
         if (!HasImported) Status = "Cancelled. No historical prices were saved.";
         Changed(); CloseRequested?.Invoke(this, EventArgs.Empty);
     }
@@ -71,12 +73,15 @@ public sealed class HistoricalPriceImportPreviewViewModel : ViewModelBase
         {
             ImportedCount = _save!(); HasImported = true;
             Status = $"Imported {ImportedCount} historical prices. The database transaction committed. Existing prices were unchanged.";
+            _afterCommit?.Invoke(ImportedCount);
         }
         catch (Exception error) when (error is InvalidDataException or IOException or UnauthorizedAccessException or ArgumentException
             or InvalidOperationException or DbUpdateException or System.Data.Common.DbException or OperationCanceledException)
         {
             LastError = error; Issue = error.Message;
-            Status = "Import failed. Nothing was saved. Cancel and reselect the files after correcting the problem.";
+            Status = HasImported
+                ? $"Imported {ImportedCount} historical prices. Prices were saved, but screen refresh failed. Do not import again; close and refresh."
+                : "Import failed. Nothing was saved. Cancel and reselect the files after correcting the problem.";
             _save = null;
         }
         finally { _busy = false; Changed(); }
