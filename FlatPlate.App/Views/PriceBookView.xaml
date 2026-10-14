@@ -47,6 +47,10 @@
 
         <!-- Host actions handle saving and CSV import/export. -->
         <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="180" />
@@ -140,6 +144,14 @@
                         Style="{StaticResource ConnectedButtonStyle}"
                         Padding="14,7" />
             </StackPanel>
+            <WrapPanel Grid.Row="1" Grid.ColumnSpan="5" Margin="0,12,0,0">
+                <Button x:Name="ImportHistoricalPricesButton" Content="Import _Historical Prices"
+                        AutomationProperties.Name="Import Historical Prices"
+                        Command="{Binding Actions.ImportHistoricalPricesCommand}"
+                        Style="{StaticResource ConnectedButtonStyle}" Padding="14,7" Margin="0,0,12,0" />
+                <TextBlock Text="Import a separately reviewed historical reference batch."
+                           VerticalAlignment="Center" Foreground="#4F5F4C" TextWrapping="Wrap" />
+            </WrapPanel>
         </Grid>
 
         <!-- price table with an empty-state message layered on top -->

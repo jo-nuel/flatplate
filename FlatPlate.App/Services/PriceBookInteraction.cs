@@ -5,7 +5,7 @@ using Microsoft.Win32;
 
 namespace FlatPlate.App.Services;
 
-public sealed class PriceBookInteraction : IPriceBookInteraction
+public sealed class PriceBookInteraction : IPriceBookInteraction, IHistoricalPriceBookInteraction
 {
     private readonly Func<Window?> _owner;
 
@@ -40,6 +40,22 @@ public sealed class PriceBookInteraction : IPriceBookInteraction
 
     public void ShowImportPreview(PriceCsvImportPreviewViewModel preview) =>
         new PriceCsvImportPreviewWindow(preview) { Owner = _owner() }.ShowDialog();
+
+    public HistoricalPriceFileSelection? ChooseHistoricalImportFiles()
+    {
+        string? Pick(string title, string filter)
+        {
+            var dialog = new OpenFileDialog { Title = title, Filter = filter, CheckFileExists = true, Multiselect = false };
+            return Show(dialog) ? dialog.FileName : null;
+        }
+        var csv = Pick("1 of 2 — Select historical prices (eight-column CSV)", "CSV files (*.csv)|*.csv");
+        if (csv is null) return null;
+        var evidence = Pick("2 of 2 — Select original historical evidence", "CSV files (*.csv)|*.csv");
+        return evidence is null ? null : new HistoricalPriceFileSelection(csv, evidence);
+    }
+
+    public void ShowHistoricalImportPreview(HistoricalPriceImportPreviewViewModel preview) =>
+        new HistoricalPriceImportPreviewWindow(preview) { Owner = _owner() }.ShowDialog();
 
     private bool Show(CommonDialog dialog)
     {
