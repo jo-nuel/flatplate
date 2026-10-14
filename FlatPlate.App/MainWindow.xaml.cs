@@ -188,22 +188,7 @@ public partial class MainWindow : Window
     }
 
     private static Uri ResolveApiBaseAddress()
-    {
-        const string defaultAddress = "http://localhost:7071/api/";
-        var configuredAddress = Environment.GetEnvironmentVariable(
-            "FLATPLATE_API_BASE_URL");
-        var address = string.IsNullOrWhiteSpace(configuredAddress)
-            ? defaultAddress
-            : configuredAddress.Trim();
-
-        if (!address.EndsWith('/'))
-        {
-            address += '/';
-        }
-
-        return Uri.TryCreate(address, UriKind.Absolute, out var baseAddress)
-            ? baseAddress
-            : throw new InvalidOperationException(
-                "FLATPLATE_API_BASE_URL must be a valid absolute URL.");
-    }
+        => AuthenticationApiEndpoint.Resolve(
+            Environment.GetEnvironmentVariable(
+                AuthenticationApiEndpoint.EnvironmentVariableName));
 }
