@@ -7,6 +7,63 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
 
+        <SolidColorBrush x:Key="FlatPlateCanvasBrush"
+                         Color="#F4F7F5" />
+        <SolidColorBrush x:Key="FlatPlateSurfaceBrush"
+                         Color="#FFFFFF" />
+        <SolidColorBrush x:Key="FlatPlateInkBrush"
+                         Color="#173D2B" />
+        <SolidColorBrush x:Key="FlatPlateMutedBrush"
+                         Color="#617067" />
+        <SolidColorBrush x:Key="FlatPlateGreenBrush"
+                         Color="#2F7D57" />
+        <SolidColorBrush x:Key="FlatPlateGreenDarkBrush"
+                         Color="#225E41" />
+        <SolidColorBrush x:Key="FlatPlateGreenSoftBrush"
+                         Color="#E5F2EA" />
+        <SolidColorBrush x:Key="FlatPlateBorderBrush"
+                         Color="#DCE5DF" />
+        <SolidColorBrush x:Key="FlatPlateDangerBrush"
+                         Color="#B42318" />
+        <SolidColorBrush x:Key="FlatPlateWarningBrush"
+                         Color="#9A6700" />
+
+        <Style x:Key="SurfaceCard"
+               TargetType="Border">
+            <Setter Property="Padding"
+                    Value="20" />
+            <Setter Property="Background"
+                    Value="{StaticResource FlatPlateSurfaceBrush}" />
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource FlatPlateBorderBrush}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="CornerRadius"
+                    Value="14" />
+        </Style>
+
+        <Style x:Key="MetricLabel"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="12" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Foreground"
+                    Value="{StaticResource FlatPlateMutedBrush}" />
+        </Style>
+
+        <Style x:Key="MetricValue"
+               TargetType="TextBlock">
+            <Setter Property="Margin"
+                    Value="0,8,0,0" />
+            <Setter Property="FontSize"
+                    Value="24" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Foreground"
+                    Value="{StaticResource FlatPlateInkBrush}" />
+        </Style>
+
         <Style x:Key="PrimaryButton"
                TargetType="Button">
             <Setter Property="MinHeight"

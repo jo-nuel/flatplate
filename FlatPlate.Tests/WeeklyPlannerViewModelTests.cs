@@ -1,5 +1,7 @@
+using FlatPlate.App.Authentication;
 using FlatPlate.App.Services;
 using FlatPlate.App.ViewModels;
+using FlatPlate.Core.Contracts.Authentication;
 using FlatPlate.Core.Enums;
 using FlatPlate.Core.Interfaces;
 using FlatPlate.Core.Models;
@@ -113,6 +115,43 @@ public sealed class WeeklyPlannerViewModelTests
             Assert.That(_repository.Items[0].Recipe, Is.SameAs(_recipe));
             Assert.That(viewModel.BudgetResult.TotalCost, Is.EqualTo(6m));
             Assert.That(viewModel.BudgetResult.PercentageUsed, Is.EqualTo(4m));
+            Assert.That(viewModel.PlannedMealCount, Is.EqualTo(1));
+            Assert.That(viewModel.PlanningProgressText, Is.EqualTo("1 of 21 meals planned"));
+            Assert.That(viewModel.SelectedStoreName, Is.EqualTo("Woolworths"));
+            Assert.That(viewModel.BudgetRemaining, Is.EqualTo(144m));
+            Assert.That(viewModel.DisplayPercentageUsed, Is.EqualTo(4m));
+        });
+    }
+
+    [Test]
+    public void HomeDashboard_TracksPlannerAndRaisesNavigationRequest()
+    {
+        _priceProvider.AddPrice(1, StoreId, 6m, 500m);
+        var planner = CreateViewModel();
+        using var session = new AuthenticationSession(TimeProvider.System);
+        session.Start(new AuthenticationResponse(
+            "test-token",
+            DateTimeOffset.UtcNow.AddMinutes(15),
+            new AuthenticatedUser(
+                Guid.NewGuid(),
+                "Jonathan",
+                "jonathan@example.com",
+                true)));
+        using var dashboard = new HomeDashboardViewModel(session, planner);
+        WorkspacePage? requestedPage = null;
+        dashboard.NavigateRequested += page => requestedPage = page;
+
+        planner.Days[0].MealSlots[0].SelectedRecipe = _recipe;
+        dashboard.OpenPlannerCommand.Execute(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(dashboard.WelcomeMessage, Is.EqualTo("Welcome back, Jonathan"));
+            Assert.That(dashboard.PlannedMealCount, Is.EqualTo(1));
+            Assert.That(dashboard.PlanningPercentage, Is.EqualTo(4.8m));
+            Assert.That(dashboard.EstimatedSpend, Is.EqualTo(6m));
+            Assert.That(dashboard.NextStepTitle, Is.EqualTo("Keep building your week"));
+            Assert.That(requestedPage, Is.EqualTo(WorkspacePage.WeeklyPlanner));
         });
     }
 
