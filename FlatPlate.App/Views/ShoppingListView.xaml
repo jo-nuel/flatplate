@@ -27,7 +27,14 @@
                     Padding="14,7"
                     Margin="0,0,10,0"/>
 
-			<TextBlock Text="Tick purchased items and enter the amount paid."
+            <TextBlock x:Name="CheapestStoreText"
+                       Text="Cheapest Store: Not calculated"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Margin="0,0,16,0"/>
+
+            <TextBlock Text="Tick purchased items and enter the amount paid."
                        VerticalAlignment="Center"/>
 		</StackPanel>
 
@@ -40,7 +47,54 @@
                   HeadersVisibility="Column"
                   RowHeaderWidth="0">
 
-			<DataGrid.Columns>
+
+            <!-- Right-click menu for shopping items -->
+            <DataGrid.RowStyle>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <MenuItem Header="Already Have It"
+                              IsCheckable="True"
+                              IsChecked="{Binding AlreadyHave,
+                                                  Mode=TwoWay,
+                                                  UpdateSourceTrigger=PropertyChanged}" />
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.RowStyle>
+
+            <!-- Group shopping items by aisle -->
+            <DataGrid.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <Expander IsExpanded="True"
+                                      Margin="0,4,0,4">
+                                            <Expander.Header>
+                                                <TextBlock Text="{Binding Name}"
+                                               FontSize="16"
+                                               FontWeight="Bold"
+                                               Padding="8,5"/>
+                                            </Expander.Header>
+
+                                            <ItemsPresenter/>
+
+                                        </Expander>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
+
+
+            <DataGrid.Columns>
 
 				<DataGridTextColumn Header="Ingredient"
                                     Binding="{Binding IngredientName}"
@@ -62,15 +116,47 @@
                                     IsReadOnly="True"
                                     Width="120"/>
 
-				<DataGridCheckBoxColumn Header="Purchased"
-                                        Binding="{Binding IsPurchased}"
-                                        Width="90"/>
+                <DataGridCheckBoxColumn Header="Purchased"
+                        Binding="{Binding IsPurchased, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Width="90"/>
 
-				<DataGridTextColumn Header="Amount paid ($)"
-                                    Binding="{Binding ActualPrice}"
-                                    Width="130"/>
 
-			</DataGrid.Columns>
+
+                <DataGridTextColumn Header="Amount Paid ($)"
+                    Width="120">
+
+                    <DataGridTextColumn.Binding>
+                        <Binding Path="ActualPrice"
+                 Mode="TwoWay"
+                 UpdateSourceTrigger="LostFocus"
+                 ValidatesOnDataErrors="True"
+                 ValidatesOnExceptions="True"
+                 NotifyOnValidationError="True"/>
+                    </DataGridTextColumn.Binding>
+
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Style.Triggers>
+                                <Trigger Property="Validation.HasError"
+                         Value="True">
+
+                                    <Setter Property="ToolTip"
+                            Value="{Binding RelativeSource={RelativeSource Self},
+                                            Path=(Validation.Errors)[0].ErrorContent}"/>
+
+                                    <Setter Property="BorderBrush" Value="Red"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+
+                </DataGridTextColumn>
+
+
+
+            </DataGrid.Columns>
 		</DataGrid>
 
 		<!-- Statistics section at the bottom -->
@@ -83,8 +169,8 @@
                        FontSize="18"/>
 
 			<TextBlock x:Name="ActualSpendingText"
-                       Text="—"
-                       FontSize="18"
+                       Text="$0.00"
+                       FontSize="20"
                        FontWeight="Bold"/>
 		</StackPanel>
 

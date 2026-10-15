@@ -8,9 +8,7 @@ namespace FlatPlate.Core.Data;
 /// </summary>
 public sealed class FlatPlateDbContext : DbContext
 {
-    /// <summary>
     /// Creates a database context using options supplied by the application or tests.
-    /// </summary>
     public FlatPlateDbContext(DbContextOptions<FlatPlateDbContext> options)
         : base(options)
     {
@@ -27,10 +25,9 @@ public sealed class FlatPlateDbContext : DbContext
     public DbSet<PriceEntry> PriceEntries => Set<PriceEntry>();
 
     public DbSet<PlannedMeal> PlannedMeals => Set<PlannedMeal>();
+    public DbSet<ShoppingListRecord> ShoppingListRecords => Set<ShoppingListRecord>();
 
-    /// <summary>
     /// Defines keys, relationships, and the shared ingredient table.
-    /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -39,6 +36,7 @@ public sealed class FlatPlateDbContext : DbContext
         ConfigureRecipes(modelBuilder);
         ConfigurePrices(modelBuilder);
         ConfigurePlannedMeals(modelBuilder);
+        ConfigureShoppingListRecords(modelBuilder);
     }
 
     private static void ConfigureIngredients(ModelBuilder modelBuilder)
@@ -97,4 +95,15 @@ public sealed class FlatPlateDbContext : DbContext
             .WithMany(recipe => recipe.PlannedMeals)
             .HasForeignKey(meal => meal.RecipeId);
     }
+
+    private static void ConfigureShoppingListRecords(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ShoppingListRecord>()
+            .HasKey(record => new
+            {
+                record.WeekStartDate,
+                record.IngredientId
+            });
+    }
+
 }

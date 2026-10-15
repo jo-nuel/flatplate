@@ -6,164 +6,26 @@
         xmlns:views="clr-namespace:FlatPlate.App.Views"
         mc:Ignorable="d"
         Title="FlatPlate"
-        Height="760"
-        Width="1220"
-        MinHeight="600"
-        MinWidth="900"
-        Background="{StaticResource FlatPlateCanvasBrush}"
+        Height="720"
+        Width="1180"
+        MinHeight="520"
+        MinWidth="820"
         WindowStartupLocation="CenterScreen">
-    <Grid>
-        <views:AuthenticationView x:Name="AuthenticationView"
-                                  Visibility="{Binding IsSignedOut,
-                                                       Converter={StaticResource BooleanToVisibilityConverter}}" />
-
-        <Grid Visibility="{Binding IsAuthenticated,
-                                   Converter={StaticResource BooleanToVisibilityConverter}}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="72" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <Border Padding="24,0"
-                    Background="#173D2B">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel VerticalAlignment="Center"
-                                Orientation="Horizontal">
-                        <Border Width="38"
-                                Height="38"
-                                Margin="0,0,12,0"
-                                Background="#D9F0E2"
-                                CornerRadius="19">
-                            <TextBlock HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       FontSize="20"
-                                       Text="F" />
-                        </Border>
-                        <StackPanel>
-                            <TextBlock Foreground="White"
-                                       FontSize="21"
-                                       FontWeight="SemiBold"
-                                       Text="FlatPlate" />
-                            <TextBlock Foreground="#BFD8CA"
-                                       FontSize="12"
-                                       Text="Plan well. Shop smart. Waste less." />
-                        </StackPanel>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Orientation="Horizontal">
-                        <TextBlock Margin="0,0,16,0"
-                                   VerticalAlignment="Center"
-                                   Foreground="White"
-                                   Text="{Binding DisplayName}" />
-                        <Button MinWidth="92"
-                                Style="{StaticResource SecondaryButton}"
-                                Command="{Binding SignOutCommand}"
-                                Content="Sign out" />
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <TabControl x:Name="WorkspaceTabs"
-                        Grid.Row="1"
-                        Background="{StaticResource FlatPlateCanvasBrush}"
-                        BorderThickness="0">
-                <TabControl.Template>
-                    <ControlTemplate TargetType="TabControl">
-                        <Grid KeyboardNavigation.TabNavigation="Local">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <Border Background="White"
-                                    BorderBrush="{StaticResource FlatPlateBorderBrush}"
-                                    BorderThickness="0,0,0,1"
-                                    Padding="16,4">
-                                <TabPanel IsItemsHost="True"
-                                          KeyboardNavigation.TabIndex="1" />
-                            </Border>
-                            <Border Grid.Row="1"
-                                    Background="{TemplateBinding Background}"
-                                    KeyboardNavigation.TabNavigation="Local">
-                                <ContentPresenter x:Name="PART_SelectedContentHost"
-                                                  ContentSource="SelectedContent"
-                                                  HorizontalAlignment="Stretch"
-                                                  VerticalAlignment="Stretch" />
-                            </Border>
-                        </Grid>
-                    </ControlTemplate>
-                </TabControl.Template>
-                <TabControl.Resources>
-                    <Style TargetType="TabItem">
-                        <Setter Property="Margin"
-                                Value="4,8,4,6" />
-                        <Setter Property="Padding"
-                                Value="14,8" />
-                        <Setter Property="Foreground"
-                                Value="{StaticResource FlatPlateMutedBrush}" />
-                        <Setter Property="FontWeight"
-                                Value="SemiBold" />
-                        <Setter Property="Cursor"
-                                Value="Hand" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="TabItem">
-                                    <Border x:Name="TabSurface"
-                                            MinHeight="40"
-                                            Padding="{TemplateBinding Padding}"
-                                            Background="Transparent"
-                                            CornerRadius="8">
-                                        <ContentPresenter ContentSource="Header"
-                                                          RecognizesAccessKey="True"
-                                                          VerticalAlignment="Center"
-                                                          HorizontalAlignment="Center" />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsSelected"
-                                                 Value="True">
-                                            <Setter TargetName="TabSurface"
-                                                    Property="Background"
-                                                    Value="{StaticResource FlatPlateGreenSoftBrush}" />
-                                            <Setter Property="Foreground"
-                                                    Value="{StaticResource FlatPlateGreenDarkBrush}" />
-                                        </Trigger>
-                                        <Trigger Property="IsMouseOver"
-                                                 Value="True">
-                                            <Setter TargetName="TabSurface"
-                                                    Property="Background"
-                                                    Value="#EEF4F0" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </TabControl.Resources>
-                <TabItem Header="Home">
-                    <views:HomeView x:Name="Home" />
-                </TabItem>
-                <TabItem Header="Recipe Library">
-                    <views:RecipeLibraryView x:Name="RecipeLibrary" />
-                </TabItem>
-                <TabItem Header="Price Book">
-                    <views:PriceBookView x:Name="PriceBook" />
-                </TabItem>
-                <TabItem Header="Weekly Planner">
-                    <views:WeeklyPlannerView x:Name="WeeklyPlanner" />
-                </TabItem>
-                <TabItem Header="Shopping List">
-                    <views:ShoppingListView />
-                </TabItem>
-                <TabItem Header="Insights">
-                    <views:InsightsView />
-                </TabItem>
-            </TabControl>
-        </Grid>
-    </Grid>
+    <TabControl>
+        <TabItem Header="Recipe Library">
+            <views:RecipeLibraryView x:Name="RecipeLibrary" />
+        </TabItem>
+        <TabItem Header="Price Book">
+            <views:PriceBookView x:Name="PriceBook" />
+        </TabItem>
+        <TabItem Header="Weekly Planner">
+            <views:WeeklyPlannerView x:Name="WeeklyPlanner" />
+        </TabItem>
+        <TabItem Header="Shopping List">
+            <views:ShoppingListView x:Name="ShoppingList" />
+        </TabItem>
+        <TabItem Header="Insights">
+            <views:InsightsView x:Name="Insights"/>
+        </TabItem>
+    </TabControl>
 </Window>
