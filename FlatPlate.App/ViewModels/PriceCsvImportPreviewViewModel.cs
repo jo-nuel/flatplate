@@ -62,7 +62,7 @@ public sealed class PriceCsvImportPreviewViewModel : ViewModelBase
             if (current) Issue("Duplicate", "A price already exists for this ingredient at this store. Import only inserts new pairs; the whole batch is blocked.");
             rows.Add(new PriceCsvPreviewRow(rowNumber, record, ingredient?.Id, store?.Id, unitMatches, false, current,
                 ingredient is null || store is null || !unitMatches || (forImport && !hasZone) ? "Blocked" : current ? "Blocked" : forImport ? "Ready for import" : "Ready for review")
-                { ObservedUtc = hasZone ? utc : null });
+            { ObservedUtc = hasZone ? utc : null });
         }
 
         var duplicates = rows.Where(r => r.IngredientId.HasValue && r.StoreId.HasValue)

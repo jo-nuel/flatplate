@@ -76,8 +76,11 @@ public sealed class PersonBRecipeLoader
                 }
                 var recipe = new Recipe
                 {
-                    Name = definition.Name, Cuisine = definition.Cuisine, PrepMinutes = definition.PrepMinutes,
-                    BaseServings = definition.BaseServings, ImagePath = definition.ImagePath,
+                    Name = definition.Name,
+                    Cuisine = definition.Cuisine,
+                    PrepMinutes = definition.PrepMinutes,
+                    BaseServings = definition.BaseServings,
+                    ImagePath = definition.ImagePath,
                 };
                 foreach (var line in lines)
                 {

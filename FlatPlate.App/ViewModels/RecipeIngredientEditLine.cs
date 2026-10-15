@@ -3,6 +3,9 @@ using FlatPlate.Core.Models;
 
 namespace FlatPlate.App.ViewModels;
 
+/// <summary>
+/// Represents one editable ingredient row and restricts units to those supported by its ingredient subtype.
+/// </summary>
 public sealed class RecipeIngredientEditLine : ViewModelBase
 {
     private Ingredient? _selectedIngredient;
@@ -32,6 +35,9 @@ public sealed class RecipeIngredientEditLine : ViewModelBase
     public string Error => _error;
     internal void SetError(string error) => SetProperty(ref _error, error, nameof(Error));
 
+    /// <summary>
+    /// Returns the first actionable validation message for this row, or null when it is valid.
+    /// </summary>
     internal string? Validate(bool duplicate)
     {
         if (SelectedIngredient is null || !IngredientOptions.Contains(SelectedIngredient)) return "Choose an ingredient from the supplied catalogue.";

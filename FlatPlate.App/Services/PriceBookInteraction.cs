@@ -5,6 +5,10 @@ using Microsoft.Win32;
 
 namespace FlatPlate.App.Services;
 
+/// <summary>
+/// Owns the WPF dialogs and file pickers requested by the Price Book coordinator.
+/// Keeping these interactions behind interfaces lets the workflow be tested without opening windows.
+/// </summary>
 public sealed class PriceBookInteraction : IPriceBookInteraction, IHistoricalPriceBookInteraction
 {
     private readonly Func<Window?> _owner;
@@ -21,8 +25,11 @@ public sealed class PriceBookInteraction : IPriceBookInteraction, IHistoricalPri
     {
         var dialog = new SaveFileDialog
         {
-            Title = "Export visible Price Book rows", Filter = "CSV files (*.csv)|*.csv",
-            DefaultExt = ".csv", AddExtension = true, OverwritePrompt = true,
+            Title = "Export visible Price Book rows",
+            Filter = "CSV files (*.csv)|*.csv",
+            DefaultExt = ".csv",
+            AddExtension = true,
+            OverwritePrompt = true,
             FileName = "FlatPlate_Prices.csv",
         };
         return Show(dialog) ? dialog.FileName : null;
@@ -32,8 +39,10 @@ public sealed class PriceBookInteraction : IPriceBookInteraction, IHistoricalPri
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Import price CSV", Filter = "CSV files (*.csv)|*.csv",
-            CheckFileExists = true, Multiselect = false,
+            Title = "Import price CSV",
+            Filter = "CSV files (*.csv)|*.csv",
+            CheckFileExists = true,
+            Multiselect = false,
         };
         return Show(dialog) ? dialog.FileName : null;
     }

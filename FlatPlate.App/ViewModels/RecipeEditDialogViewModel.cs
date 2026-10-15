@@ -5,6 +5,9 @@ using FlatPlate.Core.Models;
 
 namespace FlatPlate.App.ViewModels;
 
+/// <summary>
+/// Coordinates add and edit recipe dialogs, including ingredient-line validation and draft creation.
+/// </summary>
 public sealed class RecipeEditDialogViewModel : ViewModelBase
 {
     private readonly RecipeLibraryItem? _original;
@@ -43,7 +46,8 @@ public sealed class RecipeEditDialogViewModel : ViewModelBase
                 var line = new RecipeIngredientEditLine(IngredientOptions)
                 {
                     SelectedIngredient = IngredientOptions.SingleOrDefault(i => i.Id == source.IngredientId),
-                    AmountText = source.Amount.ToString(CultureInfo.InvariantCulture), SelectedUnit = source.Unit,
+                    AmountText = source.Amount.ToString(CultureInfo.InvariantCulture),
+                    SelectedUnit = source.Unit,
                 };
                 Lines.Add(line);
             }

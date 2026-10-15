@@ -11,6 +11,8 @@ FlatPlate is a desktop meal-planning application that helps users organise seven
 - Plan breakfast, lunch, and dinner for each day of the week.
 - Merge recipe ingredients and calculate the estimated weekly cost.
 - Compare the estimated spend with a selected grocery budget.
+- Use a grouped shopping list, track purchases, and compare the remaining basket by store.
+- Review cuisine spending, potential waste, and ML.NET price estimates in Insights.
 
 ## Run in Visual Studio
 

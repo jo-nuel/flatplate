@@ -3,6 +3,9 @@ using FlatPlate.App.ViewModels;
 
 namespace FlatPlate.App.Views;
 
+/// <summary>
+/// Displays the evidence checks that must pass before historical prices can be imported.
+/// </summary>
 public partial class HistoricalPriceImportPreviewWindow : Window
 {
     private readonly HistoricalPriceImportPreviewViewModel _preview;

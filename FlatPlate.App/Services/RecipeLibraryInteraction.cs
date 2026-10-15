@@ -5,6 +5,9 @@ using Microsoft.Win32;
 
 namespace FlatPlate.App.Services;
 
+/// <summary>
+/// Provides the Recipe Library's modal dialogs, file selection, and import confirmation prompts.
+/// </summary>
 public sealed class RecipeLibraryInteraction : IRecipeLibraryInteraction
 {
     private readonly Func<Window?> _owner;
@@ -16,14 +19,18 @@ public sealed class RecipeLibraryInteraction : IRecipeLibraryInteraction
         var recipes = new OpenFileDialog
         {
             Title = "Step 1 of 2: Select the recipe catalogue CSV",
-            Filter = "CSV files (*.csv)|*.csv", CheckFileExists = true, Multiselect = false,
+            Filter = "CSV files (*.csv)|*.csv",
+            CheckFileExists = true,
+            Multiselect = false,
             FileName = "FlatPlate_Recipes_Seed.csv",
         };
         if (!Show(recipes)) return null;
         var ingredients = new OpenFileDialog
         {
             Title = "Step 2 of 2: Select the recipe ingredient CSV",
-            Filter = "CSV files (*.csv)|*.csv", CheckFileExists = true, Multiselect = false,
+            Filter = "CSV files (*.csv)|*.csv",
+            CheckFileExists = true,
+            Multiselect = false,
             FileName = "FlatPlate_RecipeIngredients_Seed.csv",
         };
         return Show(ingredients) ? new RecipeCatalogueImportFiles(recipes.FileName, ingredients.FileName) : null;

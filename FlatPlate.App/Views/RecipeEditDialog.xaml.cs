@@ -3,6 +3,9 @@ using FlatPlate.App.ViewModels;
 
 namespace FlatPlate.App.Views;
 
+/// <summary>
+/// Hosts the validated recipe editor and returns a draft only after explicit confirmation.
+/// </summary>
 public partial class RecipeEditDialog : Window
 {
     private readonly RecipeEditDialogViewModel _model;

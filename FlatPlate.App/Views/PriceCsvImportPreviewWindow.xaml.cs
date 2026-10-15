@@ -3,6 +3,9 @@ using FlatPlate.App.ViewModels;
 
 namespace FlatPlate.App.Views;
 
+/// <summary>
+/// Lets users review parsed price rows and validation issues before an import is committed.
+/// </summary>
 public partial class PriceCsvImportPreviewWindow : Window
 {
     public PriceCsvImportPreviewWindow(PriceCsvImportPreviewViewModel preview)
