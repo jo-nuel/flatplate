@@ -387,8 +387,8 @@ public partial class ShoppingListView : UserControl
     }
 
     // Represents one row in the shopping list.
-    private class ShoppingListItem : 
-        System.ComponentModel.INotifyPropertyChanged, 
+    private class ShoppingListItem :
+        System.ComponentModel.INotifyPropertyChanged,
         System.ComponentModel.IDataErrorInfo
     {
         private bool _isPurchased;

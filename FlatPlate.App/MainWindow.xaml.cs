@@ -1,3 +1,4 @@
+using FlatPlate.App.Authentication;
 using FlatPlate.App.Data;
 using FlatPlate.App.Services;
 using FlatPlate.App.ViewModels;
@@ -6,30 +7,43 @@ using FlatPlate.Core.Models;
 using FlatPlate.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
+using System.Net.Http;
 using System.Windows;
-using System.Linq;
 
 namespace FlatPlate.App;
 
-// Provides the shared five-screen shell for the FlatPlate application.
+/// <summary>
+/// Composes the authenticated application shell and its feature screens.
+/// </summary>
 public partial class MainWindow : Window
 {
     private readonly FlatPlateDbContext _context;
     private readonly bool _ownsContext;
+    private HttpClient? _httpClient;
+    private AuthenticationSession? _session;
+    private HomeDashboardViewModel? _homeViewModel;
+    private MainWindowViewModel? _mainViewModel;
     private PriceBookCoordinator? _priceCoordinator;
     private RecipeLibraryCoordinator? _recipeCoordinator;
 
     /// <summary>
-    /// Creates the application database and connects the planner and Person B screens.
+    /// Creates the production application with its local SQLite database.
     /// </summary>
-    public MainWindow() : this(CreateDefaultContext(), ownsContext: true, initializeSeedData: true)
+    public MainWindow()
+        : this(CreateDefaultContext(), ownsContext: true, initializeSeedData: true)
     {
     }
 
-    // Composes the real application using one supplied context. Tests use an explicitly
-    // opened in-memory context; only the parameterless startup resolves the production path.
-    public MainWindow(FlatPlateDbContext context, bool ownsContext = false, bool initializeSeedData = false,
-        IPriceBookInteraction? priceInteraction = null, IRecipeLibraryInteraction? recipeInteraction = null,
+    /// <summary>
+    /// Composes the application using a supplied context so tests can use an
+    /// explicitly opened in-memory database.
+    /// </summary>
+    public MainWindow(
+        FlatPlateDbContext context,
+        bool ownsContext = false,
+        bool initializeSeedData = false,
+        IPriceBookInteraction? priceInteraction = null,
+        IRecipeLibraryInteraction? recipeInteraction = null,
         Func<DateTime>? utcSaveTime = null)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -37,11 +51,11 @@ public partial class MainWindow : Window
         try
         {
             InitializeComponent();
+            ComposeAuthentication();
             if (initializeSeedData)
             {
                 _context.Database.EnsureCreated();
 
-                // Create the Shopping List table if it does not exist
                 if (_context.Database.IsSqlite())
                 {
                     _context.Database.ExecuteSqlRaw("""
@@ -54,9 +68,7 @@ public partial class MainWindow : Window
                         CONSTRAINT "PK_ShoppingListRecords"
                         PRIMARY KEY ("WeekStartDate", "IngredientId")
                         );
-                     """);
-
-                System.Diagnostics.Debug.WriteLine("ShoppingListRecords table is ready.");
+                    """);
                 }
 
                 IngredientSeedData.AddMissingIngredients(_context);
@@ -65,12 +77,14 @@ public partial class MainWindow : Window
                 PriceSeedData.AddMissingPrices(_context);
             }
 
-            Compose(priceInteraction, recipeInteraction, utcSaveTime ?? (() => DateTime.UtcNow));
+            ComposeFeatures(
+                priceInteraction,
+                recipeInteraction,
+                utcSaveTime ?? (() => DateTime.UtcNow));
         }
         catch
         {
-            _priceCoordinator?.Dispose(); _recipeCoordinator?.Dispose();
-            if (_ownsContext) _context.Dispose();
+            DisposeResources();
             throw;
         }
     }
@@ -90,14 +104,32 @@ public partial class MainWindow : Window
         return new FlatPlateDbContext(databaseOptions);
     }
 
-    private void Compose(IPriceBookInteraction? priceInteraction, IRecipeLibraryInteraction? recipeInteraction, Func<DateTime> utcSaveTime)
+    private void ComposeAuthentication()
+    {
+        _session = new AuthenticationSession(TimeProvider.System);
+        _httpClient = new HttpClient
+        {
+            BaseAddress = ResolveApiBaseAddress(),
+            Timeout = TimeSpan.FromSeconds(15)
+        };
+        var authenticationClient = new AuthenticationApiClient(_httpClient);
+        AuthenticationView.DataContext = new AuthenticationViewModel(
+            authenticationClient,
+            _session);
+        _mainViewModel = new MainWindowViewModel(_session);
+        DataContext = _mainViewModel;
+    }
+
+    private void ComposeFeatures(
+        IPriceBookInteraction? priceInteraction,
+        IRecipeLibraryInteraction? recipeInteraction,
+        Func<DateTime> utcSaveTime)
     {
         var planRepository = new Repository<PlannedMeal>(_context);
         var planService = new WeeklyPlanService(planRepository);
         var ingredientMerger = new IngredientMerger();
         var priceProvider = new DatabasePriceProvider(_context);
         var budgetCalculator = new BudgetCalculator(priceProvider);
-        // Train the ML.NET price estimator using the CSV
         var trainingCsvPath = Path.Combine(
             AppContext.BaseDirectory,
             "Data",
@@ -115,17 +147,14 @@ public partial class MainWindow : Window
 
         try
         {
-            // Train the ML.NET price estimator
             IPriceEstimator priceEstimator =
                 new MlNetPriceEstimator(trainingCsvPath);
 
-            // Load ingredients from the existing database
             var ingredients = _context.Ingredients
                 .AsNoTracking()
                 .OrderBy(item => item.Name)
                 .ToList();
 
-            // Connect the trained model to Insights
             Insights.ConnectPriceEstimator(
                 priceEstimator,
                 ingredients,
@@ -138,16 +167,21 @@ public partial class MainWindow : Window
         }
 
         var plannerViewModel = new WeeklyPlannerViewModel(
-              planService,
-              ingredientMerger,
-              budgetCalculator,
-              new DialogService(),
-              recipes,
-              stores);
+            planService,
+            ingredientMerger,
+            budgetCalculator,
+            new DialogService(),
+            recipes,
+            stores);
 
         WeeklyPlanner.DataContext = plannerViewModel;
+        _homeViewModel = new HomeDashboardViewModel(_session!, plannerViewModel);
+        _homeViewModel.NavigateRequested += NavigateToPage;
+        Home.DataContext = _homeViewModel;
+
         var recipesById = recipes.ToDictionary(
-           recipe => recipe.Id);
+            recipe => recipe.Id);
+        var reportedMissingRecipeIds = new HashSet<int>();
 
         void RefreshShoppingList()
         {
@@ -156,17 +190,33 @@ public partial class MainWindow : Window
 
             var plannedMeals = planService.GetWeek(weekStart);
 
-            // Attach fully loaded recipes before merging.
-            var mealsWithRecipes = plannedMeals
-                .Select(meal => new PlannedMeal
+            var mealsWithRecipes = new List<PlannedMeal>();
+            foreach (var meal in plannedMeals)
+            {
+                if (!recipesById.TryGetValue(meal.RecipeId, out var recipe))
+                {
+                    if (reportedMissingRecipeIds.Add(meal.RecipeId))
+                    {
+                        MessageBox.Show(
+                            "A planned meal refers to a recipe that is no longer available. " +
+                            "That meal has been excluded from Shopping List and Insights.",
+                            "Unavailable Recipe",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                    }
+
+                    continue;
+                }
+
+                mealsWithRecipes.Add(new PlannedMeal
                 {
                     Date = meal.Date,
                     Slot = meal.Slot,
                     RecipeId = meal.RecipeId,
-                    Recipe = recipesById[meal.RecipeId],
+                    Recipe = recipe,
                     Servings = meal.Servings
-                })
-                .ToList();
+                });
+            }
 
             var mergedItems = ingredientMerger.Merge(
                 mealsWithRecipes);
@@ -203,13 +253,31 @@ public partial class MainWindow : Window
                     selectedStoreId,
                     priceProvider);
             }
+        }
 
+        void TryRefreshFeatures()
+        {
+            try
+            {
+                RefreshShoppingList();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"Shopping and insights refresh failed: {ex.Message}");
+                MessageBox.Show(
+                    "Shopping List and Insights could not be refreshed. " +
+                    "Please try again.",
+                    "Refresh Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         // Refresh when meals or servings change.
         planService.PlanChanged += (_, _) =>
         {
-            RefreshShoppingList();
+            TryRefreshFeatures();
         };
 
         // Refresh when the user changes the selected week.
@@ -220,49 +288,49 @@ public partial class MainWindow : Window
                 args.PropertyName ==
                     nameof(WeeklyPlannerViewModel.SelectedStore))
             {
-                RefreshShoppingList();
+                TryRefreshFeatures();
             }
         };
 
-        ShoppingList.ConfigurePersistence(record =>
+        void SaveShoppingRecord(ShoppingListRecord record)
         {
-            // Find an existing record for the same week and ingredient
-            var existing = _context.ShoppingListRecords.Find(
-                record.WeekStartDate,
-                record.IngredientId);
-
-            if (existing == null)
-            {
-                // Insert a new record
-                _context.ShoppingListRecords.Add(record);
-            }
-            else
-            {
-                // Update the existing record
-                existing.IsPurchased = record.IsPurchased;
-                existing.AlreadyHave = record.AlreadyHave;
-                existing.ActualPrice = record.ActualPrice;
-            }
+            ShoppingListRecord? existing = null;
 
             try
             {
-                // Save shopping record to SQLite
-                _context.SaveChanges();
+                existing = _context.ShoppingListRecords.Find(
+                    record.WeekStartDate,
+                    record.IngredientId);
 
-                System.Diagnostics.Debug.WriteLine(
-                    $"Shopping record saved: Ingredient {record.IngredientId}");
+                if (existing is null)
+                {
+                    _context.ShoppingListRecords.Add(record);
+                }
+                else
+                {
+                    existing.IsPurchased = record.IsPurchased;
+                    existing.AlreadyHave = record.AlreadyHave;
+                    existing.ActualPrice = record.ActualPrice;
+                }
+
+                _context.SaveChanges();
             }
             catch (Exception ex)
             {
-                // Log the error
                 System.Diagnostics.Debug.WriteLine(
                     $"Shopping record save failed: {ex.Message}");
 
-                // Remove the failed changes from EF Core tracking
-                _context.Entry(existing ?? record).State =
-                    EntityState.Detached;
+                var failedEntry = _context.Entry(existing ?? record);
+                if (existing is null)
+                {
+                    failedEntry.State = EntityState.Detached;
+                }
+                else
+                {
+                    failedEntry.CurrentValues.SetValues(failedEntry.OriginalValues);
+                    failedEntry.State = EntityState.Unchanged;
+                }
 
-                // Inform the user
                 MessageBox.Show(
                     "Failed to save the shopping record. " +
                     "The latest change has not been saved.",
@@ -270,78 +338,150 @@ public partial class MainWindow : Window
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
 
-
-        },
-        weekStart => _context.ShoppingListRecords
-            .AsNoTracking()
-            .Where(record => record.WeekStartDate == weekStart)
-            .ToList(),
-
-        // Delete shopping records that are no longer needed
-        (weekStart, ingredientId) =>
+        IEnumerable<ShoppingListRecord> LoadShoppingRecords(DateOnly weekStart)
         {
-            var existing = _context.ShoppingListRecords.Find(
-                weekStart,
-                ingredientId);
-
-            if (existing != null)
+            try
             {
-                _context.ShoppingListRecords.Remove(existing);
-
-                try
-                {
-                    // Save shopping changes to SQLite
-                    _context.SaveChanges();
-
-                    System.Diagnostics.Debug.WriteLine(
-                        $"Shopping record saved: Ingredient {ingredientId}");
-                }
-                catch (Exception ex)
-                {
-                    // Log the database error
-                    System.Diagnostics.Debug.WriteLine(
-                        $"Shopping record save failed: {ex.Message}");
-
-                    // Inform the user that the change was not saved
-                    MessageBox.Show(
-                        "Unable to save the shopping record. " +
-                        "Your latest change may be lost after restarting the app.",
-                        "Shopping List Save Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
+                return _context.ShoppingListRecords
+                    .AsNoTracking()
+                    .Where(record => record.WeekStartDate == weekStart)
+                    .ToList();
             }
-        });
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"Shopping records could not be loaded: {ex.Message}");
+                MessageBox.Show(
+                    "Saved shopping progress could not be loaded. " +
+                    "The current list will start without saved progress.",
+                    "Shopping List Load Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return Array.Empty<ShoppingListRecord>();
+            }
+        }
+
+        void DeleteShoppingRecord(DateOnly weekStart, int ingredientId)
+        {
+            ShoppingListRecord? existing = null;
+            try
+            {
+                existing = _context.ShoppingListRecords.Find(
+                    weekStart,
+                    ingredientId);
+
+                if (existing is null)
+                {
+                    return;
+                }
+
+                _context.ShoppingListRecords.Remove(existing);
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"Shopping record delete failed: {ex.Message}");
+
+                if (existing is not null)
+                {
+                    _context.Entry(existing).State = EntityState.Unchanged;
+                }
+
+                MessageBox.Show(
+                    "The shopping record could not be removed. " +
+                    "Your saved progress has been kept.",
+                    "Shopping List Delete Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        ShoppingList.ConfigurePersistence(
+            SaveShoppingRecord,
+            LoadShoppingRecords,
+            DeleteShoppingRecord);
 
         // Display the current week's shopping list at startup.
-        RefreshShoppingList();
+        TryRefreshFeatures();
 
         var priceReader = new PriceBookReadService(_context);
-        _priceCoordinator = new PriceBookCoordinator(new PriceBookViewModel(),
-            new PriceBookDataSource(priceReader,
-                () => _context.Ingredients.AsNoTracking().OrderBy(i => i.Name).ToList(),
-                () => _context.Stores.AsNoTracking().OrderBy(s => s.Name).ToList()),
+        _priceCoordinator = new PriceBookCoordinator(
+            new PriceBookViewModel(),
+            new PriceBookDataSource(
+                priceReader,
+                () => _context.Ingredients
+                    .AsNoTracking()
+                    .OrderBy(ingredient => ingredient.Name)
+                    .ToList(),
+                () => _context.Stores
+                    .AsNoTracking()
+                    .OrderBy(store => store.Name)
+                    .ToList()),
             priceInteraction ?? new PriceBookInteraction(() => this),
             writer: new PriceBookWriteService(_context, utcSaveTime));
         PriceBook.Connect(_priceCoordinator);
 
         var recipeReader = new RecipeLibraryReadService(_context);
         var imageReader = new RecipeImageService(AppContext.BaseDirectory);
-        _recipeCoordinator = new RecipeLibraryCoordinator(new RecipeLibraryViewModel(imageReader.Load),
-            new RecipeLibraryDataSource(recipeReader,
-                () => _context.Ingredients.AsNoTracking().OrderBy(i => i.Name).ToList()),
+        _recipeCoordinator = new RecipeLibraryCoordinator(
+            new RecipeLibraryViewModel(imageReader.Load),
+            new RecipeLibraryDataSource(
+                recipeReader,
+                () => _context.Ingredients
+                    .AsNoTracking()
+                    .OrderBy(ingredient => ingredient.Name)
+                    .ToList()),
             recipeInteraction ?? new RecipeLibraryInteraction(() => this),
             writer: new RecipeLibraryWriteService(_context));
         RecipeLibrary.Connect(_recipeCoordinator);
     }
 
-    // Releases the application database when the main window closes.
+    /// <summary>
+    /// Releases application services and the owned database context.
+    /// </summary>
     protected override void OnClosed(EventArgs eventArgs)
     {
+        DisposeResources();
+        base.OnClosed(eventArgs);
+    }
+
+    private void DisposeResources()
+    {
+        if (_homeViewModel is not null)
+        {
+            _homeViewModel.NavigateRequested -= NavigateToPage;
+            _homeViewModel.Dispose();
+        }
+
         _priceCoordinator?.Dispose();
         _recipeCoordinator?.Dispose();
-        if (_ownsContext) _context.Dispose();
-        base.OnClosed(eventArgs);
+        _mainViewModel?.Dispose();
+        _session?.Dispose();
+        _httpClient?.Dispose();
+
+        if (_ownsContext)
+        {
+            _context.Dispose();
+        }
+    }
+
+    private static Uri ResolveApiBaseAddress()
+        => AuthenticationApiEndpoint.Resolve(
+            Environment.GetEnvironmentVariable(
+                AuthenticationApiEndpoint.EnvironmentVariableName));
+
+    private void NavigateToPage(WorkspacePage page)
+    {
+        WorkspaceTabs.SelectedIndex = page switch
+        {
+            WorkspacePage.Home => 0,
+            WorkspacePage.RecipeLibrary => 1,
+            WorkspacePage.PriceBook => 2,
+            WorkspacePage.WeeklyPlanner => 3,
+            _ => WorkspaceTabs.SelectedIndex,
+        };
     }
 }

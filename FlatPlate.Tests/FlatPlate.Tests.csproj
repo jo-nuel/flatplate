@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FlatPlate.App\FlatPlate.App.csproj" />
+    <ProjectReference Include="..\FlatPlate.Server\FlatPlate.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,10 +27,5 @@
       <Link>Data\Seed\price-seed.csv</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-	<Content Include="..\FlatPlate.App\Data\Seed\price-seed.csv"
-			 Link="Data\Seed\price-seed.csv"
-			 CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

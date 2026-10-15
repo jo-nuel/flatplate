@@ -8,7 +8,9 @@ namespace FlatPlate.Core.Data;
 /// </summary>
 public sealed class FlatPlateDbContext : DbContext
 {
+    /// <summary>
     /// Creates a database context using options supplied by the application or tests.
+    /// </summary>
     public FlatPlateDbContext(DbContextOptions<FlatPlateDbContext> options)
         : base(options)
     {
@@ -27,7 +29,9 @@ public sealed class FlatPlateDbContext : DbContext
     public DbSet<PlannedMeal> PlannedMeals => Set<PlannedMeal>();
     public DbSet<ShoppingListRecord> ShoppingListRecords => Set<ShoppingListRecord>();
 
+    /// <summary>
     /// Defines keys, relationships, and the shared ingredient table.
+    /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
