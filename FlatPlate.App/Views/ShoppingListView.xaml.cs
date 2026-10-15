@@ -10,7 +10,7 @@ using FlatPlate.Core.Interfaces;
 
 namespace FlatPlate.App.Views;
 
-/// Displays the merged ingredients in the Shopping List.
+// Displays the merged ingredients in the Shopping List.
 public partial class ShoppingListView : UserControl
 {
     private readonly Dictionary<DateOnly, Dictionary<int, ShoppingListItem>>
@@ -57,9 +57,7 @@ public partial class ShoppingListView : UserControl
         CompareStoresButton.Click += CompareStoresButton_Click;
     }
 
-    /// <summary>
-    /// Loads the merged ingredients into the shopping list table.
-    /// </summary>
+    // Loads the merged ingredients into the shopping list table.
     public void LoadShoppingList(
         IEnumerable<MergedItem> items,
         DateOnly weekStart)
@@ -388,7 +386,7 @@ public partial class ShoppingListView : UserControl
         return (cheapestStore, cheapestCost);
     }
 
-    /// Represents one row in the shopping list.
+    // Represents one row in the shopping list.
     private class ShoppingListItem : 
         System.ComponentModel.INotifyPropertyChanged, 
         System.ComponentModel.IDataErrorInfo
@@ -450,7 +448,6 @@ public partial class ShoppingListView : UserControl
             }
         }
 
-
         public decimal? ActualPrice
         {
             get => _actualPrice;
@@ -483,7 +480,6 @@ public partial class ShoppingListView : UserControl
             }
         }
 
-
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(
@@ -491,5 +487,4 @@ public partial class ShoppingListView : UserControl
                 new System.ComponentModel.PropertyChangedEventArgs(propertyName));
         }
     }
-
 }
