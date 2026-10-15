@@ -47,25 +47,27 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock FontSize="12"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource FlatPlateGreenBrush}"
+                    <TextBlock Style="{StaticResource PageEyebrow}"
                                Text="MEAL PLANNING" />
-                    <TextBlock Margin="0,5,0,0"
-                               FontSize="28"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource FlatPlateInkBrush}"
+                    <TextBlock Style="{StaticResource PageTitle}"
                                Text="Weekly Planner" />
-                    <TextBlock Margin="0,5,0,0"
-                               Foreground="{StaticResource FlatPlateMutedBrush}"
+                    <TextBlock Style="{StaticResource PageDescription}"
                                Text="Choose meals for seven days and track the estimated shop as you go." />
                 </StackPanel>
-                <Button Grid.Column="1"
-                        MinWidth="105"
-                        VerticalAlignment="Bottom"
-                        Style="{StaticResource SecondaryButton}"
-                        Command="{Binding ClearWeekCommand}"
-                        Content="Clear week" />
+                <StackPanel Grid.Column="1"
+                            VerticalAlignment="Bottom"
+                            Orientation="Horizontal">
+                    <Button MinWidth="112"
+                            Margin="0,0,10,0"
+                            Style="{StaticResource TertiaryButton}"
+                            Command="{Binding CurrentWeekCommand}"
+                            Content="Current week"
+                            ToolTip="Return to the current week" />
+                    <Button MinWidth="105"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding ClearWeekCommand}"
+                            Content="Clear week" />
+                </StackPanel>
             </Grid>
 
             <Border Margin="0,18,0,0"
@@ -121,6 +123,7 @@
                         <TextBlock Style="{StaticResource PlannerInputLabel}"
                                    Text="SUPERMARKET" />
                         <ComboBox Height="34"
+                                  AutomationProperties.Name="Supermarket"
                                   ItemsSource="{Binding AvailableStores}"
                                   DisplayMemberPath="Name"
                                   SelectedItem="{Binding SelectedStore,
@@ -298,10 +301,34 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource FlatPlateInkBrush}"
                                                    Text="{Binding DayLabel}" />
-                                        <TextBlock Margin="0,2,0,0"
-                                                   HorizontalAlignment="Center"
-                                                   Foreground="{StaticResource FlatPlateMutedBrush}"
-                                                   Text="{Binding DateLabel}" />
+                                        <StackPanel Margin="0,2,0,0"
+                                                    HorizontalAlignment="Center"
+                                                    Orientation="Horizontal">
+                                            <TextBlock Foreground="{StaticResource FlatPlateMutedBrush}"
+                                                       Text="{Binding DateLabel}" />
+                                            <Border Margin="6,0,0,0"
+                                                    Padding="6,1"
+                                                    Background="{StaticResource FlatPlateGreenBrush}"
+                                                    CornerRadius="7">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility"
+                                                                Value="Collapsed" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsToday}"
+                                                                         Value="True">
+                                                                <Setter Property="Visibility"
+                                                                        Value="Visible" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="White"
+                                                           Text="TODAY" />
+                                            </Border>
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
 
@@ -336,19 +363,23 @@
                                                     </DockPanel>
                                                     <ComboBox MinWidth="126"
                                                               Height="31"
+                                                              AutomationProperties.Name="Recipe"
                                                               ItemsSource="{Binding AvailableRecipes}"
                                                               DisplayMemberPath="Name"
+                                                              TextSearch.TextPath="Name"
                                                               SelectedItem="{Binding SelectedRecipe,
                                                                                      Mode=TwoWay}" />
                                                     <DockPanel Margin="0,8,0,0">
                                                         <TextBox Width="36"
                                                                  Height="28"
+                                                                 AutomationProperties.Name="Servings"
                                                                  DockPanel.Dock="Right"
                                                                  HorizontalContentAlignment="Center"
                                                                  VerticalContentAlignment="Center"
                                                                  Text="{Binding Servings,
                                                                                 Mode=TwoWay,
-                                                                                UpdateSourceTrigger=LostFocus}" />
+                                                                                UpdateSourceTrigger=LostFocus,
+                                                                                ValidatesOnExceptions=True}" />
                                                         <TextBlock VerticalAlignment="Center"
                                                                    FontSize="12"
                                                                    Foreground="{StaticResource FlatPlateMutedBrush}"
