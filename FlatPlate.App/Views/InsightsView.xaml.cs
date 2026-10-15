@@ -11,18 +11,25 @@ using System.Globalization;
 
 namespace FlatPlate.App.Views;
 
+/// <summary>
 /// Holds the Insights tab until the teammate implementation is added.
+/// </summary>
 public partial class InsightsView : UserControl
 {
     // ML.NET price estimator
     private IPriceEstimator? _priceEstimator;
+    /// <summary>
+    /// Creates the Insights placeholder.
+    /// </summary>
     public InsightsView()
     {
         InitializeComponent();
         PredictPriceButton.Click += PredictPriceButton_Click;
     }
 
+    /// <summary>
     /// Displays supermarket costs as horizontal bar charts.
+    /// </summary>
     public void UpdateStoreComparison(
         IEnumerable<MergedItem> items,
         IEnumerable<Store> stores,
@@ -140,7 +147,10 @@ public partial class InsightsView : UserControl
             });
     }
 
+
+    /// <summary>
     /// Calculates the average potential surplus from whole-pack purchases.
+    /// </summary>
     public void UpdateWasteScore(
         IEnumerable<MergedItem> items,
         int storeId,
@@ -187,8 +197,10 @@ public partial class InsightsView : UserControl
         WasteScoreText.Text = $"{wasteScore:F1}%";
     }
 
+    /// <summary>
     /// Displays estimated ingredient spending by cuisine.
     /// Costs are calculated using recipe servings and store prices.
+    /// </summary>
     public void UpdateCuisineSpending(
         IEnumerable<PlannedMeal> meals,
         int storeId,
@@ -293,7 +305,9 @@ public partial class InsightsView : UserControl
             });
         }
     }
+    /// <summary>
     /// Connects the ML.NET estimator and loads available ingredients and stores.
+    /// </summary>
     public void ConnectPriceEstimator(
         IPriceEstimator estimator,
         IEnumerable<Ingredient> ingredients,
@@ -327,7 +341,9 @@ public partial class InsightsView : UserControl
             StoreComboBox.Items.Count > 0 ? 0 : -1;
     }
 
+    /// <summary>
     /// Predicts a product price using the trained ML.NET model.
+    /// </summary>
     private void PredictPriceButton_Click(
         object sender,
         System.Windows.RoutedEventArgs e)
@@ -382,4 +398,5 @@ public partial class InsightsView : UserControl
                 $"Prediction failed: {ex.Message}";
         }
     }
+
 }
