@@ -216,12 +216,12 @@ public partial class ShoppingListView : UserControl
         if (store == null)
         {
             CheapestStoreText.Text =
-                "Cheapest Store: No complete price data";
+                "Cheapest store: No complete price data";
             return;
         }
 
         CheapestStoreText.Text =
-            $"Cheapest Store: {store.Name} - ${cost:F2}";
+            $"Cheapest store: {store.Name} — ${cost:F2}";
     }
 
     // Show supermarket comparison when the button is clicked
@@ -247,7 +247,19 @@ public partial class ShoppingListView : UserControl
         _currentStores = stores.ToList();
         _currentPriceProvider = priceProvider;
 
-        var shoppingItems = items
+        if (_currentMergedItems.Count == 0)
+        {
+            CompareStoresButton.IsEnabled = false;
+            _storeComparisonMessage =
+                "Plan at least one meal before comparing stores.";
+            CheapestStoreText.Text =
+                "Cheapest store: Add meals to compare";
+            return;
+        }
+
+        CompareStoresButton.IsEnabled = true;
+
+        var shoppingItems = _currentMergedItems
             .Where(item =>
                 !_shoppingItems.TryGetValue(item.Ingredient.Id, out var saved)
                 || (!saved.AlreadyHave && !saved.IsPurchased))
@@ -257,7 +269,8 @@ public partial class ShoppingListView : UserControl
         {
             _storeComparisonMessage =
                 "There are no ingredients left to buy.";
-                CheapestStoreText.Text = "Cheapest Store: Nothing left to buy";
+            CheapestStoreText.Text = "Cheapest store: Nothing left to buy";
+            CompareStoresButton.IsEnabled = false;
             return;
         }
 
@@ -298,7 +311,7 @@ public partial class ShoppingListView : UserControl
         {
             _storeComparisonMessage =
                 "No supermarket has complete price information.";
-            CheapestStoreText.Text = "Cheapest Store: No complete price data";
+            CheapestStoreText.Text = "Cheapest store: No complete price data";
             return;
         }
 
@@ -306,7 +319,7 @@ public partial class ShoppingListView : UserControl
         // Update the cheapest store shown on the Shopping List
         var cheapest = results[0];
         CheapestStoreText.Text =
-            $"Cheapest Store: {cheapest.Name} - ${cheapest.Cost:F2}";
+            $"Cheapest store: {cheapest.Name} — ${cheapest.Cost:F2}";
 
         var lines = results.Select(result =>
             $"{result.Name}: ${result.Cost:F2}");

@@ -1,166 +1,162 @@
 <UserControl x:Class="FlatPlate.App.Views.InsightsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource FlatPlateCanvasBrush}">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="1120"
+                        Margin="24,22,24,32"
+                        HorizontalAlignment="Center">
+                <StackPanel Margin="0,0,0,18">
+                    <TextBlock Style="{StaticResource PageEyebrow}"
+                               Text="PLAN PERFORMANCE" />
+                    <TextBlock Style="{StaticResource PageTitle}"
+                               Text="Insights" />
+                    <TextBlock Style="{StaticResource PageDescription}"
+                               Text="Compare supermarket costs, understand cuisine spending, and check potential waste." />
+                </StackPanel>
 
-    <Grid Background="#F5F1F8" Margin="20">
-
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Page title -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="Shopping Insights"
-                   FontSize="28"
-                   FontWeight="Bold"/>
-
-            <TextBlock Text="Understand your shopping costs and food waste."
-                   FontSize="14"
-                   Foreground="#666666"
-                   Margin="0,5,0,0"/>
-        </StackPanel>
-
-        <!-- Insights content -->
-        <ScrollViewer Grid.Row="1"
-                  VerticalScrollBarVisibility="Auto">
-
-            <StackPanel>
-
-                <!-- Store Comparison -->
-                <Border Background="White"
-                    CornerRadius="10"
-                    Padding="20"
-                    Margin="0,0,0,16">
-
+                <Border Margin="0,0,0,14"
+                        Style="{StaticResource SurfaceCard}">
                     <StackPanel>
-                        <TextBlock Text="Store Comparison"
-                               FontSize="20"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,8"/>
-
-                        <TextBlock Text="Compare estimated shopping costs across supermarkets."
-                               Foreground="#666666"
-                               Margin="0,0,0,16"/>
-
+                        <TextBlock FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource FlatPlateInkBrush}"
+                                   Text="Store comparison" />
+                        <TextBlock Margin="0,5,0,16"
+                                   Foreground="{StaticResource FlatPlateMutedBrush}"
+                                   Text="Estimated cost of the current shopping list at each supermarket."
+                                   TextWrapping="Wrap" />
                         <StackPanel x:Name="StoreComparisonChart">
-                            <TextBlock Text="No comparison data available."
-                                   Foreground="Gray"/>
+                            <TextBlock Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Add meals to compare store prices." />
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <!-- Spend by Cuisine -->
-                <Border Background="White"
-                    CornerRadius="10"
-                    Padding="20"
-                    Margin="0,0,0,16">
-
+                <Border Margin="0,0,0,14"
+                        Style="{StaticResource SurfaceCard}">
                     <StackPanel>
-                        <TextBlock Text="Spend by Cuisine"
-                               FontSize="20"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,8"/>
-
-                        <TextBlock Text="Estimated spending for different cuisines."
-                               Foreground="#666666"
-                               Margin="0,0,0,16"/>
-
+                        <TextBlock FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource FlatPlateInkBrush}"
+                                   Text="Spend by cuisine" />
+                        <TextBlock Margin="0,5,0,16"
+                                   Foreground="{StaticResource FlatPlateMutedBrush}"
+                                   Text="Estimated ingredient spending grouped by the cuisines in your plan."
+                                   TextWrapping="Wrap" />
                         <StackPanel x:Name="CuisineSpendingChart">
-                            <TextBlock Text="No cuisine data available."
-                                   Foreground="Gray"/>
+                            <TextBlock Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Add meals to see cuisine spending." />
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <!-- Waste Score -->
-                <Border Background="White"
-                    CornerRadius="10"
-                    Padding="20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="3*" />
+                    </Grid.ColumnDefinitions>
 
-                    <StackPanel>
-                        <TextBlock Text="Waste Score"
-                               FontSize="20"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,8"/>
+                    <Border Style="{StaticResource SurfaceCard}">
+                        <StackPanel>
+                            <TextBlock FontSize="20"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateInkBrush}"
+                                       Text="Waste score" />
+                            <TextBlock Margin="0,5,0,18"
+                                       Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Potential surplus caused by buying whole packs."
+                                       TextWrapping="Wrap" />
+                            <TextBlock x:Name="WasteScoreText"
+                                       FontSize="32"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateGreenDarkBrush}"
+                                       Text="Not calculated" />
+                            <TextBlock Margin="0,8,0,0"
+                                       FontSize="12"
+                                       Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Lower is better"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
 
-                        <TextBlock Text="Estimated unused quantities from whole-pack purchases."
-                               Foreground="#666666"
-                               Margin="0,0,0,16"/>
+                    <Border Grid.Column="2"
+                            Style="{StaticResource SurfaceCard}">
+                        <StackPanel>
+                            <TextBlock FontSize="20"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateInkBrush}"
+                                       Text="Price estimator" />
+                            <TextBlock Margin="0,5,0,16"
+                                       Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Estimate a missing product price using the trained ML.NET model."
+                                       TextWrapping="Wrap" />
 
-                        <TextBlock x:Name="WasteScoreText"
-                               Text="Not calculated"
-                               FontSize="26"
-                               FontWeight="Bold"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Margin="0,0,0,6"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource FlatPlateInkBrush}"
+                                               Text="Ingredient" />
+                                    <ComboBox x:Name="IngredientComboBox"
+                                              AutomationProperties.Name="Ingredient"
+                                              Style="{StaticResource FormComboBox}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="0,0,0,6"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource FlatPlateInkBrush}"
+                                               Text="Store" />
+                                    <ComboBox x:Name="StoreComboBox"
+                                              AutomationProperties.Name="Store"
+                                              Style="{StaticResource FormComboBox}" />
+                                </StackPanel>
+                            </Grid>
 
-                    </StackPanel>
-                </Border>
+                            <TextBlock Margin="0,14,0,6"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateInkBrush}"
+                                       Text="Pack size (g, mL, or pieces)" />
+                            <TextBox x:Name="PackSizeTextBox"
+                                     Width="180"
+                                     HorizontalAlignment="Left"
+                                     AutomationProperties.Name="Pack size"
+                                     Style="{StaticResource FormTextBox}"
+                                     Text="1000" />
 
-                <!-- ML.NET Price Estimator -->
-                <Border Background="White"
-        CornerRadius="10"
-        Padding="20"
-        Margin="0,16,0,0">
+                            <Button x:Name="PredictPriceButton"
+                                    Margin="0,14,0,0"
+                                    HorizontalAlignment="Left"
+                                    MinWidth="130"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Content="Estimate price" />
 
-                    <StackPanel>
-                        <TextBlock Text="ML.NET Price Estimator"
-                   FontSize="20"
-                   FontWeight="SemiBold"
-                   Margin="0,0,0,8"/>
-
-                        <TextBlock Text="Predict supermarket product prices using a trained ML.NET model."
-                   Foreground="#666666"
-                   TextWrapping="Wrap"
-                   Margin="0,0,0,16"/>
-
-                        <!-- Ingredient -->
-                        <TextBlock Text="Ingredient"
-                   FontWeight="SemiBold"/>
-
-                        <ComboBox x:Name="IngredientComboBox"
-                  Margin="0,5,0,12"
-                  MinWidth="180"
-                  HorizontalAlignment="Left"/>
-
-                        <!-- Store -->
-                        <TextBlock Text="Store"
-                   FontWeight="SemiBold"/>
-
-                        <ComboBox x:Name="StoreComboBox"
-                  Margin="0,5,0,12"
-                  MinWidth="180"
-                  HorizontalAlignment="Left"/>
-
-                        <!-- Pack Size -->
-                        <TextBlock Text="Pack Size (g / mL / pieces)"
-                   FontWeight="SemiBold"/>
-
-                        <TextBox x:Name="PackSizeTextBox"
-                 Text="1000"
-                 Width="180"
-                 HorizontalAlignment="Left"
-                 Margin="0,5,0,12"/>
-
-                        <!-- Prediction Button -->
-                        <Button x:Name="PredictPriceButton"
-                Content="Predict Price"
-                Padding="14,8"
-                HorizontalAlignment="Left"
-                Margin="0,5,0,16"/>
-
-                        <!-- Prediction Result -->
-                        <TextBlock x:Name="PredictedPriceText"
-                   Text="Predicted Price: Not calculated"
-                   FontSize="18"
-                   FontWeight="Bold"/>
-
-                        <TextBlock Text="ML estimates are not verified supermarket prices."
-                   Foreground="Gray"
-                   FontSize="12"
-                   TextWrapping="Wrap"
-                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                </Border>
+                            <Border Margin="0,14,0,0"
+                                    Padding="12,10"
+                                    Background="#F0F5F1"
+                                    CornerRadius="8">
+                                <TextBlock x:Name="PredictedPriceText"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource FlatPlateInkBrush}"
+                                           Text="No estimate yet"
+                                           TextWrapping="Wrap" />
+                            </Border>
+                            <TextBlock Margin="0,8,0,0"
+                                       FontSize="12"
+                                       Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Model estimates are guidance only and are not verified supermarket prices."
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
     </Grid>
