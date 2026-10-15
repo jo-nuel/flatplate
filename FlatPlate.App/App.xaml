@@ -27,6 +27,12 @@
                          Color="#B42318" />
         <SolidColorBrush x:Key="FlatPlateWarningBrush"
                          Color="#9A6700" />
+        <SolidColorBrush x:Key="FlatPlateFocusBrush"
+                         Color="#56A87A" />
+        <SolidColorBrush x:Key="FlatPlateHoverBrush"
+                         Color="#EDF5F0" />
+        <SolidColorBrush x:Key="FlatPlateDisabledBrush"
+                         Color="#AAB5AE" />
 
         <Style x:Key="SurfaceCard"
                TargetType="Border">
@@ -80,6 +86,59 @@
                     Value="SemiBold" />
             <Setter Property="Cursor"
                     Value="Hand" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Center" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonSurface"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="ButtonSurface"
+                                        Property="Opacity"
+                                        Value="0.9" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused"
+                                     Value="True">
+                                <Setter TargetName="ButtonSurface"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource FlatPlateFocusBrush}" />
+                                <Setter TargetName="ButtonSurface"
+                                        Property="BorderThickness"
+                                        Value="2" />
+                            </Trigger>
+                            <Trigger Property="IsPressed"
+                                     Value="True">
+                                <Setter TargetName="ButtonSurface"
+                                        Property="Opacity"
+                                        Value="0.78" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter Property="Cursor"
+                                        Value="Arrow" />
+                                <Setter TargetName="ButtonSurface"
+                                        Property="Background"
+                                        Value="#E2E7E4" />
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource FlatPlateDisabledBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="SecondaryButton"
@@ -89,6 +148,23 @@
                     Value="#E8F2EC" />
             <Setter Property="Foreground"
                     Value="#225E41" />
+            <Setter Property="BorderBrush"
+                    Value="#C8DED1" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+        </Style>
+
+        <Style x:Key="TertiaryButton"
+               TargetType="Button"
+               BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background"
+                    Value="White" />
+            <Setter Property="Foreground"
+                    Value="{StaticResource FlatPlateGreenDarkBrush}" />
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource FlatPlateBorderBrush}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
         </Style>
 
         <Style x:Key="FormTextBox"
@@ -103,6 +179,22 @@
                     Value="1" />
             <Setter Property="VerticalContentAlignment"
                     Value="Center" />
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocused"
+                         Value="True">
+                    <Setter Property="BorderBrush"
+                            Value="{StaticResource FlatPlateFocusBrush}" />
+                    <Setter Property="BorderThickness"
+                            Value="2" />
+                </Trigger>
+                <Trigger Property="Validation.HasError"
+                         Value="True">
+                    <Setter Property="BorderBrush"
+                            Value="{StaticResource FlatPlateDangerBrush}" />
+                    <Setter Property="ToolTip"
+                            Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="FormPasswordBox"
@@ -117,6 +209,70 @@
                     Value="1" />
             <Setter Property="VerticalContentAlignment"
                     Value="Center" />
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocused"
+                         Value="True">
+                    <Setter Property="BorderBrush"
+                            Value="{StaticResource FlatPlateFocusBrush}" />
+                    <Setter Property="BorderThickness"
+                            Value="2" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="FormComboBox"
+               TargetType="ComboBox">
+            <Setter Property="MinHeight"
+                    Value="40" />
+            <Setter Property="Padding"
+                    Value="10,5" />
+            <Setter Property="BorderBrush"
+                    Value="#C9D4CD" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocused"
+                         Value="True">
+                    <Setter Property="BorderBrush"
+                            Value="{StaticResource FlatPlateFocusBrush}" />
+                    <Setter Property="BorderThickness"
+                            Value="2" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PageEyebrow"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="12" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Foreground"
+                    Value="{StaticResource FlatPlateGreenBrush}" />
+        </Style>
+
+        <Style x:Key="PageTitle"
+               TargetType="TextBlock">
+            <Setter Property="Margin"
+                    Value="0,5,0,0" />
+            <Setter Property="FontSize"
+                    Value="28" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Foreground"
+                    Value="{StaticResource FlatPlateInkBrush}" />
+        </Style>
+
+        <Style x:Key="PageDescription"
+               TargetType="TextBlock">
+            <Setter Property="Margin"
+                    Value="0,5,0,0" />
+            <Setter Property="Foreground"
+                    Value="{StaticResource FlatPlateMutedBrush}" />
+            <Setter Property="TextWrapping"
+                    Value="Wrap" />
         </Style>
     </Application.Resources>
 </Application>

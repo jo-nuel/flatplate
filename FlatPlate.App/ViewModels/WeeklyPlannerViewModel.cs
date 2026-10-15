@@ -62,6 +62,9 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
             () => WeekStartDate = WeekStartDate.AddDays(-DaysInWeek));
         NextWeekCommand = new RelayCommand(
             () => WeekStartDate = WeekStartDate.AddDays(DaysInWeek));
+        CurrentWeekCommand = new RelayCommand(
+            () => WeekStartDate = DateTime.Today,
+            () => WeekStartDate != GetMonday(DateTime.Today));
         ClearWeekCommand = new RelayCommand(
             ClearWeek,
             () => Days.SelectMany(day => day.MealSlots)
@@ -78,6 +81,8 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
     public RelayCommand PreviousWeekCommand { get; }
 
     public RelayCommand NextWeekCommand { get; }
+
+    public RelayCommand CurrentWeekCommand { get; }
 
     public RelayCommand ClearWeekCommand { get; }
 
@@ -163,6 +168,7 @@ public sealed class WeeklyPlannerViewModel : ViewModelBase
             if (SetProperty(ref _weekStartDate, monday))
             {
                 OnPropertyChanged(nameof(WeekRangeLabel));
+                CurrentWeekCommand.RaiseCanExecuteChanged();
                 LoadWeek();
             }
         }

@@ -2,21 +2,24 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FlatPlate.App.ViewModels"
-             Background="#F3F8F2">
+             Background="{StaticResource FlatPlateCanvasBrush}">
     <!-- Price rows are supplied by the coordinator. -->
     <UserControl.DataContext>
         <vm:PriceBookViewModel />
     </UserControl.DataContext>
 
     <UserControl.Resources>
-        <Style x:Key="PanelBorderStyle" TargetType="Border">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#D5E3D1" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="14" />
+        <Style x:Key="PanelBorderStyle" TargetType="Border" BasedOn="{StaticResource SurfaceCard}">
+            <Setter Property="Padding" Value="18" />
         </Style>
-        <Style x:Key="ConnectedButtonStyle" TargetType="Button">
+        <Style x:Key="ConnectedButtonStyle" TargetType="Button" BasedOn="{StaticResource TertiaryButton}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Actions}" Value="{x:Null}">
+                    <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ConnectedPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Actions}" Value="{x:Null}">
                     <Setter Property="IsEnabled" Value="False" />
@@ -25,7 +28,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="24,22,24,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -34,15 +37,14 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+        <StackPanel Grid.Row="0" Margin="0,0,0,18">
+            <TextBlock Text="SUPERMARKET PRICES"
+                       Style="{StaticResource PageEyebrow}" />
             <TextBlock Text="Price Book"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       Margin="0,0,0,4" />
+                       Style="{StaticResource PageTitle}" />
 
             <TextBlock Text="Keep supermarket pack prices for each ingredient. All prices are in AUD."
-                       Foreground="#4F5F4C"
-                       TextWrapping="Wrap" />
+                       Style="{StaticResource PageDescription}" />
         </StackPanel>
 
         <!-- Host actions handle saving and CSV import/export. -->
@@ -73,8 +75,7 @@
                       AutomationProperties.LabeledBy="{Binding ElementName=StoreFilterLabel}"
                       ItemsSource="{Binding StoreOptions}"
                       SelectedItem="{Binding SelectedStore}"
-                      Padding="8,5"
-                      VerticalContentAlignment="Center" />
+                      Style="{StaticResource FormComboBox}" />
 
             <!-- price entry actions; Edit is enabled only while a price row is selected -->
             <StackPanel Grid.Column="3"
@@ -84,15 +85,14 @@
                         Content="_Add Price"
                         AutomationProperties.Name="Add Price"
                         Command="{Binding Actions.AddPriceCommand}"
-                        Style="{StaticResource ConnectedButtonStyle}"
-                        Padding="14,7"
+                        Style="{StaticResource ConnectedPrimaryButtonStyle}"
                         Margin="0,0,8,0" />
 
                 <Button x:Name="EditPriceButton"
                         Content="_Edit Price"
                         AutomationProperties.Name="Edit Price"
                         Command="{Binding Actions.EditPriceCommand}"
-                        Padding="14,7">
+                        >
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource ConnectedButtonStyle}">
                             <Setter Property="IsEnabled" Value="True" />
@@ -107,23 +107,21 @@
                 </Button>
             </StackPanel>
 
-            <!-- CSV actions; Export is enabled only while the table has rows -->
-            <StackPanel Grid.Column="4"
-                        Orientation="Horizontal"
-                        Margin="24,0,0,0">
+            <!-- Secondary file actions wrap on the second row at narrower window sizes. -->
+            <WrapPanel Grid.Row="1"
+                       Grid.ColumnSpan="5"
+                       Margin="0,12,0,0">
                 <Button x:Name="ImportCsvButton"
                         Content="_Import CSV"
                         AutomationProperties.Name="Import prices from CSV"
                         Command="{Binding Actions.ImportCsvCommand}"
                         Style="{StaticResource ConnectedButtonStyle}"
-                        Padding="14,7"
                         Margin="0,0,8,0" />
 
                 <Button x:Name="ExportCsvButton"
                         Content="E_xport CSV"
                         AutomationProperties.Name="Export visible CSV rows"
                         Command="{Binding Actions.ExportCsvCommand}"
-                        Padding="14,7"
                         Margin="0,0,8,0">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource ConnectedButtonStyle}">
@@ -142,15 +140,14 @@
                         AutomationProperties.Name="Refresh Price Book"
                         Command="{Binding Actions.ReloadCommand}"
                         Style="{StaticResource ConnectedButtonStyle}"
-                        Padding="14,7" />
-            </StackPanel>
-            <WrapPanel Grid.Row="1" Grid.ColumnSpan="5" Margin="0,12,0,0">
-                <Button x:Name="ImportHistoricalPricesButton" Content="Import _Historical Prices"
+                        Margin="0,0,16,0" />
+                <Button x:Name="ImportHistoricalPricesButton"
+                        Content="Import _Historical Prices"
                         AutomationProperties.Name="Import Historical Prices"
                         Command="{Binding Actions.ImportHistoricalPricesCommand}"
-                        Style="{StaticResource ConnectedButtonStyle}" Padding="14,7" Margin="0,0,12,0" />
+                        Style="{StaticResource ConnectedButtonStyle}" Margin="0,0,12,0" />
                 <TextBlock Text="Import a separately reviewed historical reference batch."
-                           VerticalAlignment="Center" Foreground="#4F5F4C" TextWrapping="Wrap" />
+                           VerticalAlignment="Center" Foreground="{StaticResource FlatPlateMutedBrush}" TextWrapping="Wrap" />
             </WrapPanel>
         </Grid>
 
@@ -181,6 +178,21 @@
                             <Setter Property="Margin" Value="0,0,8,0" />
                         </Style>
                     </DataGrid.Resources>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="MinHeight" Value="36" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource FlatPlateHoverBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource FlatPlateGreenSoftBrush}" />
+                                    <Setter Property="Foreground" Value="{StaticResource FlatPlateInkBrush}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
 
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Ingredient"

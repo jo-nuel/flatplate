@@ -481,6 +481,8 @@ public partial class MainWindow : Window
             WorkspacePage.RecipeLibrary => 1,
             WorkspacePage.PriceBook => 2,
             WorkspacePage.WeeklyPlanner => 3,
+            WorkspacePage.ShoppingList => 4,
+            WorkspacePage.Insights => 5,
             _ => WorkspaceTabs.SelectedIndex,
         };
     }

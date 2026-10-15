@@ -5,8 +5,14 @@ using FlatPlate.Core.Models;
 
 namespace FlatPlate.App.ViewModels;
 
+/// <summary>
+/// Applies culture-independent validation to recipe and ingredient draft fields before persistence.
+/// </summary>
 public static class RecipeDraftValidation
 {
+    /// <summary>
+    /// Parses an exact positive decimal without accepting grouping separators or rounded input.
+    /// </summary>
     public static decimal? ParseAmount(string text)
     {
         text = text.Trim();
@@ -15,13 +21,22 @@ public static class RecipeDraftValidation
         return Normalise(text) == Normalise(value.ToString(CultureInfo.InvariantCulture)) ? value : null;
     }
 
+    /// <summary>
+    /// Parses a whole-number field and optionally accepts zero.
+    /// </summary>
     public static int? ParseInteger(string text, bool allowZero = false) =>
         int.TryParse(text.Trim(), NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value)
         && (allowZero ? value >= 0 : value > 0) ? value : null;
 
+    /// <summary>
+    /// Returns only units supported by the selected ingredient subtype.
+    /// </summary>
     public static IReadOnlyList<MeasureUnit> AllowedUnits(Ingredient? ingredient) =>
         Enum.GetValues<MeasureUnit>().Where(unit => CanConvert(ingredient, 1m, unit)).ToArray();
 
+    /// <summary>
+    /// Checks whether an amount can be converted by the ingredient without exposing conversion exceptions to the UI.
+    /// </summary>
     public static bool CanConvert(Ingredient? ingredient, decimal amount, MeasureUnit unit)
     {
         if (ingredient is not (WeightIngredient or VolumeIngredient or CountIngredient) || !Enum.IsDefined(unit)) return false;

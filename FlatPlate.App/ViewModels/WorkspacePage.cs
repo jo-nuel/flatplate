@@ -9,4 +9,6 @@ public enum WorkspacePage
     RecipeLibrary,
     PriceBook,
     WeeklyPlanner,
+    ShoppingList,
+    Insights,
 }

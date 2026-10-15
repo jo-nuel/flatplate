@@ -16,10 +16,21 @@ namespace FlatPlate.App.Views;
 /// </summary>
 public partial class InsightsView : UserControl
 {
+    private static readonly Brush ChartPrimaryBrush =
+        new SolidColorBrush(Color.FromRgb(47, 125, 87));
+    private static readonly Brush ChartSecondaryBrush =
+        new SolidColorBrush(Color.FromRgb(141, 185, 160));
+    private static readonly Brush MutedTextBrush =
+        new SolidColorBrush(Color.FromRgb(97, 112, 103));
+    private static readonly Brush InkTextBrush =
+        new SolidColorBrush(Color.FromRgb(23, 61, 43));
+    private static readonly Brush DangerTextBrush =
+        new SolidColorBrush(Color.FromRgb(180, 35, 24));
+
     // ML.NET price estimator
     private IPriceEstimator? _priceEstimator;
     /// <summary>
-    /// Creates the Insights placeholder.
+    /// Creates the shopping insights workspace.
     /// </summary>
     public InsightsView()
     {
@@ -51,7 +62,7 @@ public partial class InsightsView : UserControl
                 new TextBlock
                 {
                     Text = "No shopping data available.",
-                    Foreground = Brushes.Gray
+                    Foreground = MutedTextBrush
                 });
             return;
         }
@@ -97,7 +108,7 @@ public partial class InsightsView : UserControl
                 new TextBlock
                 {
                     Text = "No store has complete price data.",
-                    Foreground = Brushes.Gray
+                    Foreground = MutedTextBrush
                 });
             return;
         }
@@ -124,8 +135,8 @@ public partial class InsightsView : UserControl
             {
                 Height = 20,
                 Background = result.Equals(results[0])
-                    ? Brushes.SeaGreen
-                    : Brushes.SteelBlue,
+                    ? ChartPrimaryBrush
+                    : ChartSecondaryBrush,
                 CornerRadius = new CornerRadius(4),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Width = maxCost > 0
@@ -142,7 +153,7 @@ public partial class InsightsView : UserControl
             {
                 Text = $"Cheapest Store: {results[0].Name}",
                 FontWeight = FontWeights.Bold,
-                Foreground = Brushes.SeaGreen,
+                Foreground = ChartPrimaryBrush,
                 Margin = new Thickness(0, 15, 0, 0)
             });
     }
@@ -271,7 +282,7 @@ public partial class InsightsView : UserControl
             CuisineSpendingChart.Children.Add(new TextBlock
             {
                 Text = "No cuisine spending data available.",
-                Foreground = Brushes.Gray
+                Foreground = MutedTextBrush
             });
             return;
         }
@@ -296,7 +307,7 @@ public partial class InsightsView : UserControl
             CuisineSpendingChart.Children.Add(new Border
             {
                 Height = 20,
-                Background = Brushes.SteelBlue,
+                Background = ChartSecondaryBrush,
                 CornerRadius = new CornerRadius(4),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Width = maxCost > 0
@@ -350,8 +361,9 @@ public partial class InsightsView : UserControl
     {
         if (_priceEstimator == null)
         {
-            PredictedPriceText.Text =
-                "Price estimator is not available.";
+            SetPredictionMessage(
+                "Price estimator is not available.",
+                isError: true);
             return;
         }
 
@@ -362,8 +374,9 @@ public partial class InsightsView : UserControl
         if (string.IsNullOrWhiteSpace(ingredient) ||
             string.IsNullOrWhiteSpace(store))
         {
-            PredictedPriceText.Text =
-                "Please select an ingredient and a store.";
+            SetPredictionMessage(
+                "Please select an ingredient and a store.",
+                isError: true);
             return;
         }
 
@@ -376,27 +389,43 @@ public partial class InsightsView : UserControl
             !float.IsFinite(packSize) ||
             packSize <= 0)
         {
-            PredictedPriceText.Text =
-                "Please enter a valid positive pack size.";
+            PackSizeTextBox.BorderBrush = DangerTextBrush;
+            PackSizeTextBox.BorderThickness = new Thickness(2);
+            SetPredictionMessage(
+                "Enter a pack size greater than zero.",
+                isError: true);
             return;
         }
 
         try
         {
+            PackSizeTextBox.ClearValue(Control.BorderBrushProperty);
+            PackSizeTextBox.ClearValue(Control.BorderThicknessProperty);
+
             // Request a prediction through the interface
             var predictedPrice = _priceEstimator.PredictPrice(
                 ingredient,
                 store,
                 packSize);
 
-            PredictedPriceText.Text =
-                $"Predicted Price: ${predictedPrice:F2}";
+            SetPredictionMessage(
+                $"Estimated price: ${predictedPrice:F2}",
+                isError: false);
         }
         catch (Exception ex)
         {
-            PredictedPriceText.Text =
-                $"Prediction failed: {ex.Message}";
+            SetPredictionMessage(
+                $"Prediction failed: {ex.Message}",
+                isError: true);
         }
+    }
+
+    private void SetPredictionMessage(string message, bool isError)
+    {
+        PredictedPriceText.Text = message;
+        PredictedPriceText.Foreground = isError
+            ? DangerTextBrush
+            : InkTextBrush;
     }
 
 }

@@ -10,7 +10,10 @@
         Width="1220"
         MinHeight="600"
         MinWidth="900"
+        FontFamily="Segoe UI"
         Background="{StaticResource FlatPlateCanvasBrush}"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display"
         WindowStartupLocation="CenterScreen">
     <Grid>
         <views:AuthenticationView x:Name="AuthenticationView"
@@ -20,12 +23,14 @@
         <Grid Visibility="{Binding IsAuthenticated,
                                    Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="72" />
+                <RowDefinition Height="76" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Border Padding="24,0"
-                    Background="#173D2B">
+            <Border Padding="28,0"
+                    Background="#173D2B"
+                    BorderBrush="#2A5A43"
+                    BorderThickness="0,0,0,1">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -42,6 +47,8 @@
                             <TextBlock HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        FontSize="20"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateInkBrush}"
                                        Text="F" />
                         </Border>
                         <StackPanel>
@@ -84,7 +91,7 @@
                             <Border Background="White"
                                     BorderBrush="{StaticResource FlatPlateBorderBrush}"
                                     BorderThickness="0,0,0,1"
-                                    Padding="16,4">
+                                    Padding="20,5">
                                 <TabPanel IsItemsHost="True"
                                           KeyboardNavigation.TabIndex="1" />
                             </Border>
@@ -118,7 +125,9 @@
                                             MinHeight="40"
                                             Padding="{TemplateBinding Padding}"
                                             Background="Transparent"
-                                            CornerRadius="8">
+                                            BorderBrush="Transparent"
+                                            BorderThickness="0,0,0,3"
+                                            CornerRadius="8,8,0,0">
                                         <ContentPresenter ContentSource="Header"
                                                           RecognizesAccessKey="True"
                                                           VerticalAlignment="Center"
@@ -130,6 +139,9 @@
                                             <Setter TargetName="TabSurface"
                                                     Property="Background"
                                                     Value="{StaticResource FlatPlateGreenSoftBrush}" />
+                                            <Setter TargetName="TabSurface"
+                                                    Property="BorderBrush"
+                                                    Value="{StaticResource FlatPlateGreenBrush}" />
                                             <Setter Property="Foreground"
                                                     Value="{StaticResource FlatPlateGreenDarkBrush}" />
                                         </Trigger>
@@ -138,6 +150,12 @@
                                             <Setter TargetName="TabSurface"
                                                     Property="Background"
                                                     Value="#EEF4F0" />
+                                        </Trigger>
+                                        <Trigger Property="IsKeyboardFocused"
+                                                 Value="True">
+                                            <Setter TargetName="TabSurface"
+                                                    Property="BorderBrush"
+                                                    Value="{StaticResource FlatPlateFocusBrush}" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>

@@ -92,6 +92,26 @@ public sealed class WeeklyPlannerViewModelTests
         });
     }
 
+    [Test]
+    public void CurrentWeekCommand_ReturnsPlannerToCurrentMonday()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.NextWeekCommand.Execute(null);
+
+        viewModel.CurrentWeekCommand.Execute(null);
+
+        var today = DateTime.Today;
+        var daysSinceMonday =
+            (7 + (int)today.DayOfWeek - (int)DayOfWeek.Monday) % 7;
+        var expectedMonday = today.Date.AddDays(-daysSinceMonday);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.WeekStartDate, Is.EqualTo(expectedMonday));
+            Assert.That(viewModel.CurrentWeekCommand.CanExecute(null), Is.False);
+        });
+    }
+
     /// <summary>
     /// Confirms that selecting a recipe saves the meal and costs its ingredients.
     /// </summary>
@@ -153,6 +173,12 @@ public sealed class WeeklyPlannerViewModelTests
             Assert.That(dashboard.NextStepTitle, Is.EqualTo("Keep building your week"));
             Assert.That(requestedPage, Is.EqualTo(WorkspacePage.WeeklyPlanner));
         });
+
+        dashboard.OpenShoppingListCommand.Execute(null);
+        Assert.That(requestedPage, Is.EqualTo(WorkspacePage.ShoppingList));
+
+        dashboard.OpenInsightsCommand.Execute(null);
+        Assert.That(requestedPage, Is.EqualTo(WorkspacePage.Insights));
     }
 
     /// <summary>

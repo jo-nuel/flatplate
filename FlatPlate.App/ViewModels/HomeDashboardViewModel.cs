@@ -25,6 +25,10 @@ public sealed class HomeDashboardViewModel : ViewModelBase, IDisposable
             () => NavigateRequested?.Invoke(WorkspacePage.RecipeLibrary));
         OpenPriceBookCommand = new RelayCommand(
             () => NavigateRequested?.Invoke(WorkspacePage.PriceBook));
+        OpenShoppingListCommand = new RelayCommand(
+            () => NavigateRequested?.Invoke(WorkspacePage.ShoppingList));
+        OpenInsightsCommand = new RelayCommand(
+            () => NavigateRequested?.Invoke(WorkspacePage.Insights));
 
         _session.SessionChanged += OnSessionChanged;
         _planner.PropertyChanged += OnPlannerChanged;
@@ -50,6 +54,8 @@ public sealed class HomeDashboardViewModel : ViewModelBase, IDisposable
     public decimal EstimatedSpend => _planner.BudgetResult.TotalCost;
 
     public string BudgetVarianceText => _planner.BudgetVarianceText;
+
+    public bool IsOverBudget => _planner.BudgetResult.IsOverBudget;
 
     public string SelectedStoreName => _planner.SelectedStoreName;
 
@@ -80,6 +86,10 @@ public sealed class HomeDashboardViewModel : ViewModelBase, IDisposable
 
     public ICommand OpenPriceBookCommand { get; }
 
+    public ICommand OpenShoppingListCommand { get; }
+
+    public ICommand OpenInsightsCommand { get; }
+
     public void Dispose()
     {
         _session.SessionChanged -= OnSessionChanged;
@@ -99,6 +109,7 @@ public sealed class HomeDashboardViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(PlanningPercentage));
         OnPropertyChanged(nameof(EstimatedSpend));
         OnPropertyChanged(nameof(BudgetVarianceText));
+        OnPropertyChanged(nameof(IsOverBudget));
         OnPropertyChanged(nameof(SelectedStoreName));
         OnPropertyChanged(nameof(MissingPriceCount));
         OnPropertyChanged(nameof(NextStepTitle));

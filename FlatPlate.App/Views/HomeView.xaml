@@ -58,9 +58,7 @@
             <StackPanel MaxWidth="1120"
                         Margin="32,28,32,40"
                         HorizontalAlignment="Center">
-                <TextBlock FontSize="13"
-                           FontWeight="SemiBold"
-                           Foreground="{StaticResource FlatPlateGreenBrush}"
+                <TextBlock Style="{StaticResource PageEyebrow}"
                            Text="YOUR WEEK AT A GLANCE" />
                 <TextBlock Margin="0,6,0,0"
                            FontSize="32"
@@ -158,9 +156,22 @@
                         <StackPanel>
                             <TextBlock Style="{StaticResource MetricLabel}"
                                        Text="BUDGET STATUS" />
-                            <TextBlock Style="{StaticResource MetricValue}"
-                                       FontSize="19"
-                                       Text="{Binding BudgetVarianceText}" />
+                            <TextBlock Text="{Binding BudgetVarianceText}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock"
+                                           BasedOn="{StaticResource MetricValue}">
+                                        <Setter Property="FontSize"
+                                                Value="19" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsOverBudget}"
+                                                         Value="True">
+                                                <Setter Property="Foreground"
+                                                        Value="{StaticResource FlatPlateDangerBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                             <TextBlock Margin="0,4,0,0"
                                        Foreground="{StaticResource FlatPlateMutedBrush}"
                                        Text="updates as you plan" />
@@ -260,6 +271,44 @@
                                        Text="Price Book" />
                             <TextBlock Foreground="{StaticResource FlatPlateMutedBrush}"
                                        Text="Review prices before estimating."
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Button>
+                </UniformGrid>
+
+                <UniformGrid Margin="0,16,0,0"
+                             Columns="2">
+                    <Button Margin="0,0,8,0"
+                            Style="{StaticResource DashboardActionButton}"
+                            Command="{Binding OpenShoppingListCommand}">
+                        <StackPanel>
+                            <TextBlock Foreground="{StaticResource FlatPlateGreenBrush}"
+                                       FontWeight="SemiBold"
+                                       Text="04  SHOP" />
+                            <TextBlock Margin="0,12,0,4"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateInkBrush}"
+                                       Text="Shopping List" />
+                            <TextBlock Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Take your combined ingredient list to the store."
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Button>
+                    <Button Margin="8,0,0,0"
+                            Style="{StaticResource DashboardActionButton}"
+                            Command="{Binding OpenInsightsCommand}">
+                        <StackPanel>
+                            <TextBlock Foreground="{StaticResource FlatPlateGreenBrush}"
+                                       FontWeight="SemiBold"
+                                       Text="05  REVIEW" />
+                            <TextBlock Margin="0,12,0,4"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource FlatPlateInkBrush}"
+                                       Text="Insights" />
+                            <TextBlock Foreground="{StaticResource FlatPlateMutedBrush}"
+                                       Text="Compare stores, cuisine spend, and potential waste."
                                        TextWrapping="Wrap" />
                         </StackPanel>
                     </Button>
