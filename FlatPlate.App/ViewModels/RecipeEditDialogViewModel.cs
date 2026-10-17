@@ -67,8 +67,9 @@ public sealed class RecipeEditDialogViewModel : ViewModelBase
     }
     public string Title => Mode == RecipeEditMode.Add ? SaveOnConfirm ? "Add Recipe" : "Add Recipe Draft" : SaveOnConfirm ? "Edit Recipe" : "Edit Recipe Draft";
     public string ConfirmLabel => SaveOnConfirm ? "Save Recipe" : "Confirm Draft";
-    public string Notice => SaveOnConfirm ? "Amounts are totals for Base Servings. Save applies the valid recipe; Cancel leaves it unchanged."
-        : "Amounts are totals for Base Servings. Confirm prepares an unsaved draft; Cancel leaves the recipe unchanged.";
+    public string Notice => SaveOnConfirm
+        ? "Enter the recipe details, then add each ingredient and its total amount for the chosen base servings. Fields marked * are required. Save applies only a valid recipe; Cancel leaves it unchanged."
+        : "Enter the recipe details, then add each ingredient and its total amount for the chosen base servings. Fields marked * are required. Confirm prepares an unsaved draft; Cancel leaves the recipe unchanged.";
     public string NameText { get => _nameText; set { if (SetProperty(ref _nameText, value ?? "")) Changed(); } }
     public string CuisineText { get => _cuisineText; set { if (SetProperty(ref _cuisineText, value ?? "")) Changed(); } }
     public string ServingsText { get => _servingsText; set { if (SetProperty(ref _servingsText, value ?? "")) Changed(); } }

@@ -5,6 +5,30 @@
              Background="{StaticResource FlatPlateCanvasBrush}">
     <UserControl.DataContext><vm:RecipeLibraryViewModel /></UserControl.DataContext>
     <UserControl.Resources>
+        <DrawingImage x:Key="RecipePlaceholderImage">
+            <DrawingImage.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="#EDF5EF">
+                        <GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,200,72" /></GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#D1E5D6">
+                        <GeometryDrawing.Geometry><EllipseGeometry Center="100,36" RadiusX="28" RadiusY="24" /></GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#F9FBFA">
+                        <GeometryDrawing.Geometry><EllipseGeometry Center="100,36" RadiusX="20" RadiusY="17" /></GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#2E855F">
+                        <GeometryDrawing.Geometry><EllipseGeometry Center="96,32" RadiusX="5" RadiusY="10" /></GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#4EA476">
+                        <GeometryDrawing.Geometry><EllipseGeometry Center="105,40" RadiusX="5" RadiusY="10" /></GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#E2A65B">
+                        <GeometryDrawing.Geometry><EllipseGeometry Center="109,28" RadiusX="4" RadiusY="4" /></GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
         <Style x:Key="PanelBorderStyle" TargetType="Border" BasedOn="{StaticResource SurfaceCard}">
             <Setter Property="Padding" Value="18" />
         </Style>
@@ -63,10 +87,12 @@
                                 </Style></Border.Style>
                                 <StackPanel>
                                     <Grid Height="72" Margin="0,0,0,10" Background="#EAF2ED">
-                                        <Image Source="{Binding Image}" Stretch="UniformToFill" />
-                                        <TextBlock Text="No image" Foreground="{StaticResource FlatPlateMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers><DataTrigger Binding="{Binding HasImage}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></TextBlock.Style>
-                                        </TextBlock>
+                                        <Image Source="{StaticResource RecipePlaceholderImage}" Stretch="UniformToFill" AutomationProperties.Name="Recipe placeholder artwork">
+                                            <Image.Style><Style TargetType="Image"><Style.Triggers><DataTrigger Binding="{Binding HasImage}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></Image.Style>
+                                        </Image>
+                                        <Image Source="{Binding Image}" Stretch="UniformToFill" AutomationProperties.Name="Recipe image">
+                                            <Image.Style><Style TargetType="Image"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding HasImage}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Image.Style>
+                                        </Image>
                                     </Grid>
                                     <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,4" />
                                     <TextBlock Text="{Binding CuisineDisplay}" Foreground="{StaticResource FlatPlateGreenBrush}" TextWrapping="Wrap" />
