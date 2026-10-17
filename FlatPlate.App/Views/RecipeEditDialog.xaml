@@ -1,85 +1,139 @@
 <Window x:Class="FlatPlate.App.Views.RecipeEditDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{Binding Title}" Width="900" Height="660" MinWidth="720" MinHeight="520"
-        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="#FFF8F1">
+        Title="{Binding Title}" Width="940" Height="700" MinWidth="760" MinHeight="560"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource FlatPlateCanvasBrush}">
     <Window.Resources>
+        <Style x:Key="FieldLabelStyle" TargetType="Label">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,0,5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource FlatPlateInkBrush}" />
+        </Style>
         <Style x:Key="ErrorStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#B3261E" /><Setter Property="TextWrapping" Value="Wrap" />
-            <Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed" /></Trigger></Style.Triggers>
+            <Setter Property="Foreground" Value="{StaticResource FlatPlateDangerBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,5,0,0" />
+            <Style.Triggers>
+                <Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed" /></Trigger>
+            </Style.Triggers>
         </Style>
         <Style x:Key="NamedIngredientStyle" TargetType="ComboBoxItem"><Setter Property="AutomationProperties.Name" Value="{Binding Name}" /></Style>
+        <Style x:Key="IngredientGridStyle" TargetType="DataGrid">
+            <Setter Property="BorderBrush" Value="{StaticResource FlatPlateBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="RowHeight" Value="46" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource FlatPlateBorderBrush}" />
+            <Setter Property="VerticalGridLinesBrush" Value="Transparent" />
+            <Setter Property="Background" Value="{StaticResource FlatPlateSurfaceBrush}" />
+            <Setter Property="RowHeaderWidth" Value="0" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="ColumnHeaderStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="{StaticResource FlatPlateGreenSoftBrush}" />
+                        <Setter Property="Foreground" Value="{StaticResource FlatPlateGreenDarkBrush}" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                        <Setter Property="Padding" Value="10,8" />
+                        <Setter Property="BorderBrush" Value="{StaticResource FlatPlateBorderBrush}" />
+                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RowStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Background" Value="{StaticResource FlatPlateSurfaceBrush}" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource FlatPlateHoverBrush}" /></Trigger>
+                            <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{StaticResource FlatPlateGreenSoftBrush}" /></Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
-    <Grid Margin="20">
+    <Grid Margin="28">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" />
             <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold" />
-        <TextBlock Grid.Row="1" Text="{Binding Notice}" TextWrapping="Wrap" Foreground="#5A5047" Margin="0,6,0,12" />
+        <StackPanel>
+            <TextBlock Text="RECIPE LIBRARY" Style="{StaticResource PageEyebrow}" />
+            <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitle}" />
+        </StackPanel>
+        <TextBlock Grid.Row="1" Text="{Binding Notice}" Style="{StaticResource PageDescription}" Margin="0,8,0,14" />
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="160" /><ColumnDefinition Width="110" /><ColumnDefinition Width="110" /></Grid.ColumnDefinitions>
             <StackPanel Margin="0,0,10,0">
-                <Label Content="Recipe _name *" Target="{Binding ElementName=NameTextBox}" Padding="0" />
-                <TextBox x:Name="NameTextBox" AutomationProperties.Name="Recipe name" Text="{Binding NameText, UpdateSourceTrigger=PropertyChanged}" Padding="5" />
+                <Label Content="Recipe _name *" Target="{Binding ElementName=NameTextBox}" Style="{StaticResource FieldLabelStyle}" />
+                <TextBox x:Name="NameTextBox" AutomationProperties.Name="Recipe name" Text="{Binding NameText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}" />
                 <TextBlock Text="{Binding NameError}" Style="{StaticResource ErrorStyle}" />
             </StackPanel>
             <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                <Label Content="_Cuisine" Target="{Binding ElementName=CuisineTextBox}" Padding="0" />
-                <TextBox x:Name="CuisineTextBox" AutomationProperties.Name="Cuisine" Text="{Binding CuisineText, UpdateSourceTrigger=PropertyChanged}" Padding="5" />
+                <Label Content="_Cuisine" Target="{Binding ElementName=CuisineTextBox}" Style="{StaticResource FieldLabelStyle}" />
+                <TextBox x:Name="CuisineTextBox" AutomationProperties.Name="Cuisine" Text="{Binding CuisineText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}" />
             </StackPanel>
             <StackPanel Grid.Column="2" Margin="0,0,10,0">
-                <Label Content="Base _servings *" Target="{Binding ElementName=ServingsTextBox}" Padding="0" />
-                <TextBox x:Name="ServingsTextBox" AutomationProperties.Name="Base servings" Text="{Binding ServingsText, UpdateSourceTrigger=PropertyChanged}" Padding="5" />
+                <Label Content="Base _servings *" Target="{Binding ElementName=ServingsTextBox}" Style="{StaticResource FieldLabelStyle}" />
+                <TextBox x:Name="ServingsTextBox" AutomationProperties.Name="Base servings" Text="{Binding ServingsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}" />
                 <TextBlock Text="{Binding ServingsError}" Style="{StaticResource ErrorStyle}" />
             </StackPanel>
             <StackPanel Grid.Column="3">
-                <Label Content="Prep _minutes" Target="{Binding ElementName=PrepMinutesTextBox}" Padding="0" />
-                <TextBox x:Name="PrepMinutesTextBox" AutomationProperties.Name="Prep minutes" Text="{Binding PrepMinutesText, UpdateSourceTrigger=PropertyChanged}" Padding="5" />
+                <Label Content="Prep _minutes" Target="{Binding ElementName=PrepMinutesTextBox}" Style="{StaticResource FieldLabelStyle}" />
+                <TextBox x:Name="PrepMinutesTextBox" AutomationProperties.Name="Prep minutes" Text="{Binding PrepMinutesText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}" />
                 <TextBlock Text="{Binding PrepMinutesError}" Style="{StaticResource ErrorStyle}" />
             </StackPanel>
         </Grid>
-        <StackPanel Grid.Row="3" Margin="0,10,0,10">
-            <Label Content="_Image path (optional)" Target="{Binding ElementName=ImagePathTextBox}" Padding="0" />
-            <TextBox x:Name="ImagePathTextBox" AutomationProperties.Name="Optional image path" Text="{Binding ImagePathText, UpdateSourceTrigger=PropertyChanged}" Padding="5" />
-            <TextBlock Text="Leave this blank to show the built-in recipe placeholder in the library." Foreground="#5A5047" FontSize="12" Margin="0,4,0,0" />
-        </StackPanel>
+        <Border Grid.Row="3" Style="{StaticResource SurfaceCard}" Padding="16" Margin="0,10,0,12">
+            <StackPanel>
+                <Label Content="_Image path (optional)" Target="{Binding ElementName=ImagePathTextBox}" Style="{StaticResource FieldLabelStyle}" />
+                <TextBox x:Name="ImagePathTextBox" AutomationProperties.Name="Optional image path" Text="{Binding ImagePathText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}" />
+                <TextBlock Text="Leave this blank to use the built-in recipe placeholder in the library." Foreground="{StaticResource FlatPlateMutedBrush}" FontSize="12" Margin="0,6,0,0" />
+            </StackPanel>
+        </Border>
         <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBlock Text="Ingredients *" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0" />
-            <Button x:Name="AddIngredientButton" Content="_Add ingredient" Command="{Binding AddLineCommand}" Padding="10,5" Margin="0,0,8,0" />
-            <Button x:Name="RemoveIngredientButton" Content="_Remove selected" Command="{Binding RemoveLineCommand}" Padding="10,5" />
+            <TextBlock Text="Ingredients *" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource FlatPlateInkBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+            <Button x:Name="AddIngredientButton" Content="_Add ingredient" Command="{Binding AddLineCommand}" Style="{StaticResource SecondaryButton}" MinWidth="130" Margin="0,0,8,0" />
+            <Button x:Name="RemoveIngredientButton" Content="_Remove selected" Command="{Binding RemoveLineCommand}" Style="{StaticResource TertiaryButton}" MinWidth="145" />
         </StackPanel>
         <DataGrid Grid.Row="5" x:Name="IngredientLinesGrid" AutomationProperties.Name="Unsaved recipe ingredient lines"
                   ItemsSource="{Binding Lines}" SelectedItem="{Binding SelectedLine}" AutoGenerateColumns="False"
-                  CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" HeadersVisibility="Column">
+                  CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" HeadersVisibility="Column"
+                  Style="{StaticResource IngredientGridStyle}">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Ingredient" Width="2*" MinWidth="160">
                     <DataGridTemplateColumn.CellTemplate><DataTemplate>
                         <ComboBox AutomationProperties.Name="Ingredient for this line" ItemsSource="{Binding IngredientOptions}"
                                   DisplayMemberPath="Name" ItemContainerStyle="{StaticResource NamedIngredientStyle}"
-                                  SelectedItem="{Binding SelectedIngredient, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                  SelectedItem="{Binding SelectedIngredient, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Style="{StaticResource FormComboBox}" Margin="6,3" />
                     </DataTemplate></DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Amount" Width="*" MinWidth="110">
                     <DataGridTemplateColumn.CellTemplate><DataTemplate>
-                        <TextBox AutomationProperties.Name="Total ingredient amount" Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox AutomationProperties.Name="Total ingredient amount" Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}" Margin="6,3" />
                     </DataTemplate></DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Unit" Width="120">
                     <DataGridTemplateColumn.CellTemplate><DataTemplate>
-                        <ComboBox AutomationProperties.Name="Ingredient unit" ItemsSource="{Binding UnitOptions}" SelectedItem="{Binding SelectedUnit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ComboBox AutomationProperties.Name="Ingredient unit" ItemsSource="{Binding UnitOptions}" SelectedItem="{Binding SelectedUnit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormComboBox}" Margin="6,3" />
                     </DataTemplate></DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Validation" Binding="{Binding Error}" IsReadOnly="True" Width="2*" MinWidth="140">
-                    <DataGridTextColumn.ElementStyle><Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Foreground" Value="#B3261E" /><Setter Property="Margin" Value="4" /></Style></DataGridTextColumn.ElementStyle>
+                    <DataGridTextColumn.ElementStyle><Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Foreground" Value="{StaticResource FlatPlateDangerBrush}" /><Setter Property="Margin" Value="8,4" /><Setter Property="VerticalAlignment" Value="Center" /></Style></DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
         <TextBlock Grid.Row="6" x:Name="FormErrorText" Text="{Binding FormError}" Style="{StaticResource ErrorStyle}" Margin="0,8,0,0" />
-        <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-            <Button x:Name="ConfirmRecipeButton" Content="{Binding ConfirmLabel}" Command="{Binding ConfirmCommand}" IsDefault="True" Padding="16,7" Margin="0,0,8,0" />
-            <Button x:Name="CancelRecipeButton" Content="Cancel" IsCancel="True" Padding="16,7" />
+        <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button x:Name="CancelRecipeButton" Content="Cancel" IsCancel="True" Style="{StaticResource TertiaryButton}" MinWidth="104" Margin="0,0,10,0" />
+            <Button x:Name="ConfirmRecipeButton" Content="{Binding ConfirmLabel}" Command="{Binding ConfirmCommand}" IsDefault="True" Style="{StaticResource PrimaryButton}" MinWidth="132" />
         </StackPanel>
     </Grid>
 </Window>
